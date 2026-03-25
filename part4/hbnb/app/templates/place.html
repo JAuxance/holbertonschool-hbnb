@@ -13,55 +13,80 @@
 
 <section id="place-details" class="place-details">
     <h2 class="sr-only">Place information</h2>
-    <article class="place-card feature-card">
-        <div class="feature-meta">
-            <p class="card-kicker" id="place-tag">Design stay</p>
-            <h2 id="place-title">Canal Loft</h2>
-            <p class="price-tag" id="place-price">145 € / night</p>
+    <article class="place-card feature-card place-showcase">
+        <div class="place-showcase-media">
+            <img
+                id="place-image"
+                src="{{ url_for('static', filename='img/places/canal-loft.jpg') }}"
+                alt="Canal Loft interior"
+            >
         </div>
+        <div class="place-showcase-content">
+            <div class="feature-meta">
+                <p class="card-kicker" id="place-tag">Design stay</p>
+                <h2 id="place-title">Canal Loft</h2>
+                <p class="price-tag" id="place-price">145 € / night</p>
+            </div>
 
-        <div class="place-info-grid">
-            <div class="place-info">
-                <h3>Host</h3>
-                <p id="place-host">Clara D.</p>
+            <div class="host-card">
+                <img
+                    id="host-avatar"
+                    class="user-avatar user-avatar-large"
+                    src="https://api.dicebear.com/9.x/open-peeps/svg?seed=clara-d"
+                    alt="Host avatar"
+                >
+                <div class="host-copy">
+                    <h3>Host</h3>
+                    <p id="place-host">Clara D.</p>
+                </div>
             </div>
-            <div class="place-info">
-                <h3>Location</h3>
-                <p id="place-location">Paris, France</p>
-            </div>
-            <div class="place-info">
-                <h3>Amenities</h3>
-                <ul id="place-amenities" class="chip-list">
-                    <li>WiFi</li>
-                    <li>Kitchen</li>
-                    <li>Balcony</li>
-                </ul>
-            </div>
-            <div class="place-info">
-                <h3>Description</h3>
-                <p id="place-description">
-                    A bright loft with a calm palette, generous daylight, and enough room to slow down.
-                </p>
+
+            <div class="place-info-grid">
+                <div class="place-info">
+                    <h3>Location</h3>
+                    <p id="place-location">Paris, France</p>
+                </div>
+                <div class="place-info">
+                    <h3>Amenities</h3>
+                    <ul id="place-amenities" class="chip-list">
+                        <li>WiFi</li>
+                        <li>Kitchen</li>
+                        <li>Balcony</li>
+                    </ul>
+                </div>
+                <div class="place-info place-info-wide">
+                    <h3>Description</h3>
+                    <p id="place-description">
+                        A bright loft with a calm palette, generous daylight, and enough room to slow down.
+                    </p>
+                </div>
             </div>
         </div>
     </article>
 </section>
 
-<section class="section-head compact">
-    <div>
-        <p class="eyebrow">Guest feedback</p>
-        <h2>Reviews</h2>
+<section class="reviews-block" aria-labelledby="reviews-title">
+    <div class="section-head compact reviews-head">
+        <div>
+            <p class="eyebrow">Guest feedback</p>
+            <h2>Reviews</h2>
+        </div>
+        <p class="section-text">Real comments are loaded from the API when available.</p>
     </div>
-    <p class="section-text">Real comments are loaded from the API when available.</p>
-</section>
 
-<section aria-labelledby="reviews-title">
     <h3 id="reviews-title" class="sr-only">Reviews</h3>
-    <div id="reviews-list" class="reviews-list">
+    <div id="reviews-list" class="reviews-list reviews-list-balanced">
         <div class="review-card">
             <div class="review-meta">
-                <strong>Nina R.</strong>
-                <span>5 / 5</span>
+                <div class="review-user">
+                    <img
+                        class="user-avatar review-avatar"
+                        src="https://api.dicebear.com/9.x/open-peeps/svg?seed=nina-r"
+                        alt="Reviewer avatar"
+                    >
+                    <strong>Nina R.</strong>
+                </div>
+                <span class="review-rating">5 / 5</span>
             </div>
             <p>
                 Beautifully quiet in the evening, with a layout that feels instantly relaxing.

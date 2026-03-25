@@ -84,6 +84,14 @@ python run.py
 The API will be available at `http://localhost:5000/api/v1/`
 `run.py` also bootstraps the default admin user if it is missing.
 
+## Frontend Visual Credits
+
+- **Place photos**: downloaded locally from Pexels under the [Pexels License](https://www.pexels.com/license/).
+- **Canal Loft image**: https://www.pexels.com/photo/modern-loft-style-living-room-interior-6580381/
+- **Maison du Sud image**: https://www.pexels.com/photo/bright-wooden-kitchen-with-dining-area-and-deck-view-35527012/
+- **Studio Horizon image**: https://www.pexels.com/photo/modern-studio-apartment-with-green-accent-wall-36025790/
+- **User avatars**: generated with DiceBear Open Peeps. License reference: https://www.dicebear.com/licenses/
+
 ---
 
 ## API Endpoints

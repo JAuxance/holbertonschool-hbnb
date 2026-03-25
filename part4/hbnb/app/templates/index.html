@@ -10,42 +10,143 @@
             and a cleaner booking flow.
         </p>
     </div>
-    <aside class="hero-panel">
-        <p class="panel-label">What you can do here</p>
-        <ul class="panel-list">
-            <li>Discover places by vibe and price.</li>
-            <li>Open a detailed page before you commit.</li>
-            <li>Leave a review once you are authenticated.</li>
-        </ul>
+    <aside class="hero-panel hero-panel-reimagined" aria-labelledby="panel-title">
+        <div class="panel-header">
+            <p class="panel-eyebrow">Quick start</p>
+            <h2 id="panel-title" class="panel-title">A simpler way to move from browsing to booking.</h2>
+        </div>
+
+        <div class="panel-steps">
+            <div class="panel-step">
+                <span class="panel-step-number">01</span>
+                <div class="panel-step-copy">
+                    <h3>Scan the mood fast</h3>
+                    <p>Large photos, clearer prices, and more balanced cards make the list easier to read.</p>
+                </div>
+            </div>
+            <div class="panel-step">
+                <span class="panel-step-number">02</span>
+                <div class="panel-step-copy">
+                    <h3>Open a place with confidence</h3>
+                    <p>Each stay keeps a stronger visual identity before you move into the detail page.</p>
+                </div>
+            </div>
+            <div class="panel-step">
+                <span class="panel-step-number">03</span>
+                <div class="panel-step-copy">
+                    <h3>Review once connected</h3>
+                    <p>The auth flow stays simple, with review actions revealed when the user is signed in.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-stats" role="group" aria-label="HBnB highlights">
+            <div class="panel-stat">
+                <strong>3</strong>
+                <span>featured stays</span>
+            </div>
+            <div class="panel-stat">
+                <strong>1</strong>
+                <span>clean auth entry</span>
+            </div>
+            <div class="panel-stat">
+                <strong>100%</strong>
+                <span>local place photos</span>
+            </div>
+        </div>
     </aside>
 </section>
 
-<section class="section-head">
+<section class="section-head section-head-slim">
     <div>
         <p class="eyebrow">Available now</p>
         <h2>List of Places</h2>
     </div>
     <p class="section-text">
-        A minimal V1 that stays readable, soft, and responsive on desktop and mobile.
+        The cards below are intentionally larger, calmer, and easier to scan on wide screens.
     </p>
 </section>
 
-<section aria-labelledby="places-title">
+<section class="places-block" aria-labelledby="places-title">
     <h3 id="places-title" class="sr-only">Places</h3>
     <div id="places-grid" class="places-grid">
         <article class="place-card">
-            <p class="card-kicker">Demo stay</p>
-            <h3>Canal Loft</h3>
-            <p class="price-tag">145 € / night</p>
-            <p class="card-description">Soft daylight, oak details, and a quiet street.</p>
-            <a class="details-button" href="{{ url_for('web.place') }}">View Details</a>
+            <a class="place-card-link" href="{{ url_for('web.place') }}?id=demo-loft" aria-label="View details for Canal Loft">
+                <div class="place-photo">
+                    <img
+                        src="{{ url_for('static', filename='img/places/canal-loft.jpg') }}"
+                        alt="Canal Loft interior"
+                        style="object-position: 50% 58%;"
+                    >
+                </div>
+                <div class="place-card-body">
+                    <p class="card-kicker">Light-filled loft</p>
+                    <h3>Canal Loft</h3>
+                    <p class="price-tag">145 € / night</p>
+                    <p class="card-description">Soft daylight, oak details, and a quiet street.</p>
+                    <div class="card-host">
+                        <img
+                            class="user-avatar"
+                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=clara-d"
+                            alt="Clara D. avatar"
+                        >
+                        <span>Hosted by Clara D.</span>
+                    </div>
+                    <span class="details-button">View Details</span>
+                </div>
+            </a>
         </article>
         <article class="place-card">
-            <p class="card-kicker">Demo stay</p>
-            <h3>Maison du Sud</h3>
-            <p class="price-tag">190 € / night</p>
-            <p class="card-description">A warm, plant-filled home designed for long breakfasts.</p>
-            <a class="details-button" href="{{ url_for('web.place') }}">View Details</a>
+            <a class="place-card-link" href="{{ url_for('web.place') }}?id=demo-house" aria-label="View details for Maison du Sud">
+                <div class="place-photo">
+                    <img
+                        src="{{ url_for('static', filename='img/places/maison-du-sud.jpg') }}"
+                        alt="Maison du Sud interior"
+                        style="object-position: 48% 52%;"
+                    >
+                </div>
+                <div class="place-card-body">
+                    <p class="card-kicker">Family retreat</p>
+                    <h3>Maison du Sud</h3>
+                    <p class="price-tag">190 € / night</p>
+                    <p class="card-description">A warm, plant-filled home designed for long breakfasts.</p>
+                    <div class="card-host">
+                        <img
+                            class="user-avatar"
+                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=malo-t"
+                            alt="Malo T. avatar"
+                        >
+                        <span>Hosted by Malo T.</span>
+                    </div>
+                    <span class="details-button">View Details</span>
+                </div>
+            </a>
+        </article>
+        <article class="place-card">
+            <a class="place-card-link" href="{{ url_for('web.place') }}?id=demo-studio" aria-label="View details for Studio Horizon">
+                <div class="place-photo">
+                    <img
+                        src="{{ url_for('static', filename='img/places/studio-horizon.jpg') }}"
+                        alt="Studio Horizon interior"
+                        style="object-position: 50% 50%;"
+                    >
+                </div>
+                <div class="place-card-body">
+                    <p class="card-kicker">City studio</p>
+                    <h3>Studio Horizon</h3>
+                    <p class="price-tag">98 € / night</p>
+                    <p class="card-description">Compact, quiet, and carefully designed for solo escapes or easy work trips.</p>
+                    <div class="card-host">
+                        <img
+                            class="user-avatar"
+                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=iris-l"
+                            alt="Iris L. avatar"
+                        >
+                        <span>Hosted by Iris L.</span>
+                    </div>
+                    <span class="details-button">View Details</span>
+                </div>
+            </a>
         </article>
     </div>
     <noscript>

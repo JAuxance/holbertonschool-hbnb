@@ -29,18 +29,24 @@
             </a>
 
             <nav class="main-nav" aria-label="Primary navigation">
-                <a href="{{ url_for('web.index') }}">Places</a>
-                <a href="{{ url_for('web.login') }}">Login</a>
+                <a
+                    href="{{ url_for('web.index') }}"
+                    class="{{ 'is-active' if page_name in ['index', 'place', 'add-review'] else '' }}"
+                >
+                    Places
+                </a>
                 <a href="/api/v1/">API Docs</a>
             </nav>
 
-            <a
-                href="{{ url_for('web.login') }}"
-                class="login-button"
-                id="auth-link"
-            >
-                Login
-            </a>
+            <div class="auth-actions" id="auth-actions">
+                <a
+                    href="{{ url_for('web.login') }}"
+                    class="login-button"
+                    id="auth-link"
+                >
+                    Login
+                </a>
+            </div>
         </header>
 
         <main class="page-main">
