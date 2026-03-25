@@ -1,6 +1,8 @@
+import re
+
 from .base_model import BaseModel
 from sqlalchemy.orm import validates
-from sqlalchemy import Column, String, ForeignKey, Float
+from sqlalchemy import Column, String, ForeignKey, Float, Text
 from sqlalchemy.orm import relationship, synonym
 from app.extensions import db
 
@@ -17,6 +19,9 @@ class Place(BaseModel):
     price = Column(Float, nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
+    image_url = Column(String(255), nullable=True)
+    phone_number = Column(String(40), nullable=True)
+    custom_amenities_raw = Column(Text, nullable=True)
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     # Keep owner_id as an alias to preserve existing API and service compatibility.
     owner_id = synonym('user_id')
@@ -25,7 +30,17 @@ class Place(BaseModel):
     reviews = relationship('Review', back_populates='place', cascade='all, delete-orphan')
     amenities = relationship('Amenity', secondary=place_amenity, back_populates='places')
 
-    def __init__(self, title, description, price, latitude, longitude, owner):
+    def __init__(
+        self,
+        title,
+        description,
+        price,
+        latitude,
+        longitude,
+        owner,
+        image_url=None,
+        phone_number=None,
+    ):
         """Initialize a Place instance."""
         super().__init__()
         self.title = title
@@ -34,6 +49,8 @@ class Place(BaseModel):
         self.latitude = latitude
         self.longitude = longitude
         self.owner = owner
+        self.image_url = image_url
+        self.phone_number = phone_number
 
     @validates('title')
     def validate_title(self, key, value):
@@ -83,6 +100,22 @@ class Place(BaseModel):
             raise ValueError("Longitude must be between -180 and 180")
         return float(value)
 
+    @validates('phone_number')
+    def validate_phone_number(self, key, value):
+        """Validate the optional phone number."""
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise TypeError("Phone number must be a string")
+        value = value.strip()
+        if not value:
+            return None
+        if len(value) > 16:
+            raise ValueError("Phone number must be 16 characters or less")
+        if not re.fullmatch(r"\+\d{6,15}", value):
+            raise ValueError("Phone number must use the international format starting with +")
+        return value
+
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)
@@ -100,6 +133,9 @@ class Place(BaseModel):
             'price': self.price,
             'latitude': self.latitude,
             'longitude': self.longitude,
+            'image_url': self.image_url,
+            'phone_number': self.phone_number,
+            'custom_amenities': [],
             'owner_id': self.owner_id,
             'amenities': [amenity.to_dict() for amenity in self.amenities]
         }

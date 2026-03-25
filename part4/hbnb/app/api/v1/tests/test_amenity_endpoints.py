@@ -2,31 +2,43 @@ from tests_utils import APITestCase
 
 
 class TestAmenityEndpoints(APITestCase):
-    def test_admin_can_create_amenity(self):
-        response, name = self.create_amenity(name="Wi-Fi")
+    def test_authenticated_user_can_create_amenity(self):
+        _, token, _, _ = self.create_and_login_user()
+        response, name = self.create_amenity(name="Wi-Fi", token=token)
 
         self.assertEqual(response.status_code, 201)
         data = response.get_json()
         self.assertIn("id", data)
         self.assertEqual(data["name"], name)
 
-    def test_create_amenity_requires_admin(self):
-        _, token, _, _ = self.create_and_login_user(
-            first_name="Regular",
-            last_name="User",
-            email="regular@example.com",
+    def test_create_amenity_requires_authentication(self):
+        response = self.client.post(
+            "/api/v1/amenities/",
+            json={"name": "Private Pool"},
         )
 
-        response, _ = self.create_amenity(name="Private Pool", token=token)
+        self.assertEqual(response.status_code, 401)
 
-        self.assertEqual(response.status_code, 403)
-        self.assertIn("error", response.get_json())
+    def test_create_amenity_reuses_existing_name_case_insensitively(self):
+        _, token, _, _ = self.create_and_login_user()
+        created, _ = self.create_amenity(name="Private Pool", token=token)
+
+        response = self.client.post(
+            "/api/v1/amenities/",
+            json={"name": "  private pool  "},
+            headers=self.auth_headers(token),
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["id"], created.get_json()["id"])
 
     def test_create_amenity_invalid_data(self):
+        _, token, _, _ = self.create_and_login_user()
         response = self.client.post(
             "/api/v1/amenities/",
             json={"name": ""},
-            headers=self.auth_headers(self.get_admin_token()),
+            headers=self.auth_headers(token),
         )
 
         self.assertEqual(response.status_code, 400)

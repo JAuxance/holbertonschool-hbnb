@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow">Account preferences</p>
+            <h1>Settings</h1>
+        </div>
+        <p class="section-text">
+            Update the name shown across your published places and account menu.
+        </p>
+    </div>
+
+    <div id="settings-auth-required" class="info-banner hidden" aria-live="polite"></div>
+
+    <div id="settings-card" class="form-card hidden">
+        <form id="settings-form" class="form" action="/api/v1/users/me" method="post">
+            <div class="field-grid field-grid-2">
+                <div class="field">
+                    <label for="settings-first-name">First Name</label>
+                    <input
+                        id="settings-first-name"
+                        name="first_name"
+                        type="text"
+                        maxlength="50"
+                        autocomplete="given-name"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="settings-last-name">Last Name</label>
+                    <input
+                        id="settings-last-name"
+                        name="last_name"
+                        type="text"
+                        maxlength="50"
+                        autocomplete="family-name"
+                        required
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="primary-button">Save Changes</button>
+            <p id="settings-message" class="form-message" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -13,23 +13,17 @@ amenity_model = api.model('Amenity', {
 class AmenityList(Resource):
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
+    @api.response(200, 'Amenity already existed and was reused')
     @api.response(400, 'Invalid input data')
-    @api.response(403, 'Admin privileges required')
     @jwt_required()
     def post(self):
-        """Register a new amenity (admin only)"""
-        current_user = get_jwt()
-        
-        # Check if user is an admin
-        if not current_user.get('is_admin', False):
-            return {'error': 'Admin privileges required'}, 403
-        
-        amenity_data = api.payload
+        """Register a new amenity or reuse an existing one"""
+        amenity_data = dict(api.payload or {})
         try:
-            amenity = facade.create_amenity(amenity_data)
+            amenity, created = facade.create_or_get_amenity(amenity_data)
         except ValueError as e:
             return {'error': str(e)}, 400
-        return {'id': amenity.id, 'name': amenity.name}, 201
+        return {'id': amenity.id, 'name': amenity.name}, 201 if created else 200
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):

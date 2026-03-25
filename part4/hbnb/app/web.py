@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, url_for
 
 
 web_bp = Blueprint("web", __name__)
@@ -15,6 +15,21 @@ def login():
     return render_template("login.html", page_name="login", page_title="Sign In")
 
 
+@web_bp.get("/signup.html")
+def signup():
+    return render_template("signup.html", page_name="signup", page_title="Sign Up")
+
+
+@web_bp.get("/profile.html")
+def profile():
+    return render_template("profile.html", page_name="profile", page_title="Your Profile")
+
+
+@web_bp.get("/settings.html")
+def settings():
+    return render_template("settings.html", page_name="settings", page_title="Account Settings")
+
+
 @web_bp.get("/place.html")
 def place():
     return render_template("place.html", page_name="place", page_title="Place Details")
@@ -27,3 +42,17 @@ def add_review():
         page_name="add-review",
         page_title="Add Your Review",
     )
+
+
+@web_bp.get("/add_place.html")
+def add_place():
+    return render_template(
+        "add_place.html",
+        page_name="add-place",
+        page_title="Create Place",
+    )
+
+
+@web_bp.get("/add_user.html")
+def add_user():
+    return redirect(url_for("web.signup"))

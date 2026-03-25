@@ -6,10 +6,16 @@
         <p class="eyebrow">Stay overview</p>
         <h1>Place Details</h1>
     </div>
-    <a id="review-action" class="details-button" href="{{ url_for('web.login') }}">
-        Login to Add Review
-    </a>
+    <div class="section-actions">
+        <a id="review-action" class="details-button" href="{{ url_for('web.login') }}">
+            Login to Add Review
+        </a>
+        <button id="delete-place-action" type="button" class="danger-button hidden">
+            Delete Place
+        </button>
+    </div>
 </section>
+<p id="place-action-message" class="form-message place-action-message" aria-live="polite"></p>
 
 <section id="place-details" class="place-details">
     <h2 class="sr-only">Place information</h2>
@@ -45,6 +51,12 @@
                 <div class="place-info">
                     <h3>Location</h3>
                     <p id="place-location">Paris, France</p>
+                </div>
+                <div id="place-phone-card" class="place-info hidden">
+                    <h3>Host contact</h3>
+                    <p>
+                        <a id="place-phone-link" class="place-phone-link" href="#">+33 6 12 34 56 78</a>
+                    </p>
                 </div>
                 <div class="place-info">
                     <h3>Amenities</h3>

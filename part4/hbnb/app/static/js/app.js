@@ -79,6 +79,86 @@ const FALLBACK_REVIEWS = {
     ],
 };
 
+const PHONE_COUNTRIES = [
+    { iso: "AR", name: "Argentina", dialCode: "+54" },
+    { iso: "AU", name: "Australia", dialCode: "+61" },
+    { iso: "AT", name: "Austria", dialCode: "+43" },
+    { iso: "BE", name: "Belgium", dialCode: "+32" },
+    { iso: "BR", name: "Brazil", dialCode: "+55" },
+    { iso: "BG", name: "Bulgaria", dialCode: "+359" },
+    { iso: "CA", name: "Canada", dialCode: "+1" },
+    { iso: "CL", name: "Chile", dialCode: "+56" },
+    { iso: "CN", name: "China", dialCode: "+86" },
+    { iso: "CO", name: "Colombia", dialCode: "+57" },
+    { iso: "CR", name: "Costa Rica", dialCode: "+506" },
+    { iso: "HR", name: "Croatia", dialCode: "+385" },
+    { iso: "CY", name: "Cyprus", dialCode: "+357" },
+    { iso: "CZ", name: "Czech Republic", dialCode: "+420" },
+    { iso: "DK", name: "Denmark", dialCode: "+45" },
+    { iso: "DO", name: "Dominican Republic", dialCode: "+1" },
+    { iso: "EG", name: "Egypt", dialCode: "+20" },
+    { iso: "EE", name: "Estonia", dialCode: "+372" },
+    { iso: "FI", name: "Finland", dialCode: "+358" },
+    { iso: "FR", name: "France", dialCode: "+33" },
+    { iso: "DE", name: "Germany", dialCode: "+49" },
+    { iso: "GH", name: "Ghana", dialCode: "+233" },
+    { iso: "GR", name: "Greece", dialCode: "+30" },
+    { iso: "HK", name: "Hong Kong", dialCode: "+852" },
+    { iso: "HU", name: "Hungary", dialCode: "+36" },
+    { iso: "IS", name: "Iceland", dialCode: "+354" },
+    { iso: "IN", name: "India", dialCode: "+91" },
+    { iso: "ID", name: "Indonesia", dialCode: "+62" },
+    { iso: "IE", name: "Ireland", dialCode: "+353" },
+    { iso: "IL", name: "Israel", dialCode: "+972" },
+    { iso: "IT", name: "Italy", dialCode: "+39" },
+    { iso: "JP", name: "Japan", dialCode: "+81" },
+    { iso: "KE", name: "Kenya", dialCode: "+254" },
+    { iso: "LV", name: "Latvia", dialCode: "+371" },
+    { iso: "LB", name: "Lebanon", dialCode: "+961" },
+    { iso: "LT", name: "Lithuania", dialCode: "+370" },
+    { iso: "LU", name: "Luxembourg", dialCode: "+352" },
+    { iso: "MY", name: "Malaysia", dialCode: "+60" },
+    { iso: "MT", name: "Malta", dialCode: "+356" },
+    { iso: "MX", name: "Mexico", dialCode: "+52" },
+    { iso: "MA", name: "Morocco", dialCode: "+212" },
+    { iso: "NL", name: "Netherlands", dialCode: "+31" },
+    { iso: "NZ", name: "New Zealand", dialCode: "+64" },
+    { iso: "NG", name: "Nigeria", dialCode: "+234" },
+    { iso: "NO", name: "Norway", dialCode: "+47" },
+    { iso: "PK", name: "Pakistan", dialCode: "+92" },
+    { iso: "PA", name: "Panama", dialCode: "+507" },
+    { iso: "PE", name: "Peru", dialCode: "+51" },
+    { iso: "PH", name: "Philippines", dialCode: "+63" },
+    { iso: "PL", name: "Poland", dialCode: "+48" },
+    { iso: "PT", name: "Portugal", dialCode: "+351" },
+    { iso: "PR", name: "Puerto Rico", dialCode: "+1" },
+    { iso: "QA", name: "Qatar", dialCode: "+974" },
+    { iso: "RO", name: "Romania", dialCode: "+40" },
+    { iso: "SA", name: "Saudi Arabia", dialCode: "+966" },
+    { iso: "RS", name: "Serbia", dialCode: "+381" },
+    { iso: "SG", name: "Singapore", dialCode: "+65" },
+    { iso: "SK", name: "Slovakia", dialCode: "+421" },
+    { iso: "SI", name: "Slovenia", dialCode: "+386" },
+    { iso: "ZA", name: "South Africa", dialCode: "+27" },
+    { iso: "KR", name: "South Korea", dialCode: "+82" },
+    { iso: "ES", name: "Spain", dialCode: "+34" },
+    { iso: "SE", name: "Sweden", dialCode: "+46" },
+    { iso: "CH", name: "Switzerland", dialCode: "+41" },
+    { iso: "TW", name: "Taiwan", dialCode: "+886" },
+    { iso: "TH", name: "Thailand", dialCode: "+66" },
+    { iso: "TN", name: "Tunisia", dialCode: "+216" },
+    { iso: "TR", name: "Turkey", dialCode: "+90" },
+    { iso: "UA", name: "Ukraine", dialCode: "+380" },
+    { iso: "AE", name: "United Arab Emirates", dialCode: "+971" },
+    { iso: "GB", name: "United Kingdom", dialCode: "+44" },
+    { iso: "US", name: "United States", dialCode: "+1" },
+    { iso: "UY", name: "Uruguay", dialCode: "+598" },
+    { iso: "VE", name: "Venezuela", dialCode: "+58" },
+    { iso: "VN", name: "Vietnam", dialCode: "+84" },
+];
+
+const DEFAULT_PHONE_COUNTRY = "FR";
+
 let currentUserPromise = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -90,10 +170,18 @@ document.addEventListener("DOMContentLoaded", () => {
         void initIndexPage();
     } else if (page === "login") {
         initLoginPage();
+    } else if (page === "signup") {
+        void initSignupPage();
+    } else if (page === "profile") {
+        void initProfilePage();
+    } else if (page === "settings") {
+        void initSettingsPage();
     } else if (page === "place") {
         void initPlacePage();
     } else if (page === "add-review") {
         void initAddReviewPage();
+    } else if (page === "add-place") {
+        void initAddPlacePage();
     }
 });
 
@@ -124,12 +212,19 @@ async function initAuthActions() {
     }
 
     const user = await loadCurrentUser();
+    if (!user) {
+        renderGuestAuth(container);
+        return;
+    }
     renderUserAuth(container, user);
 }
 
 function renderGuestAuth(container) {
     container.innerHTML = `
-        <a href="/login.html" class="login-button" id="auth-link">Login</a>
+        <div class="auth-cluster auth-cluster-guest">
+            <a class="utility-link" href="/signup.html">Sign up</a>
+            <a href="/login.html" class="login-button" id="auth-link">Login</a>
+        </div>
     `;
 }
 
@@ -139,24 +234,35 @@ function renderUserAuth(container, user) {
 
     container.innerHTML = `
         <div class="auth-cluster">
-            <div class="profile-chip" aria-label="Connected account">
-                <img class="user-avatar" src="${avatar}" alt="${label} avatar">
-                <span class="profile-meta">
-                    <span class="profile-label">Connected</span>
-                    <span class="profile-name">${label}</span>
-                </span>
+            <div class="auth-shortcuts">
+                <a class="utility-link" href="/add_place.html">New Place</a>
             </div>
-            <button type="button" class="logout-button" id="logout-button">Logout</button>
+            <div class="profile-menu" data-profile-menu>
+                <button
+                    type="button"
+                    class="profile-chip profile-chip-button"
+                    aria-label="Open account menu"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-profile-toggle
+                >
+                    <img class="user-avatar" src="${avatar}" alt="${label} avatar">
+                    <span class="profile-meta">
+                        <span class="profile-label">Connected</span>
+                        <span class="profile-name">${label}</span>
+                    </span>
+                    <span class="profile-caret" aria-hidden="true">▾</span>
+                </button>
+                <div class="profile-dropdown" role="menu" data-profile-dropdown>
+                    <a class="profile-menu-item" href="/profile.html" role="menuitem">Profile</a>
+                    <a class="profile-menu-item" href="/settings.html" role="menuitem">Settings</a>
+                    <button type="button" class="profile-menu-item profile-menu-item-danger" role="menuitem" data-logout-action>Logout</button>
+                </div>
+            </div>
         </div>
     `;
 
-    const logoutButton = document.getElementById("logout-button");
-    if (logoutButton) {
-        logoutButton.addEventListener("click", () => {
-            clearToken();
-            window.location.href = "/index.html";
-        });
-    }
+    initProfileMenu(container);
 }
 
 async function loadCurrentUser() {
@@ -172,20 +278,89 @@ async function loadCurrentUser() {
     currentUserPromise = (async () => {
         const payload = decodeJwtPayload(token);
         const userId = payload?.sub;
+        const isAdmin = Boolean(payload?.is_admin);
 
         if (!userId) {
-            return { id: "account", userName: "Account" };
+            return { id: "account", userName: "Account", is_admin: isAdmin };
         }
 
         try {
-            const user = await fetchJson(`/api/v1/users/${userId}`);
-            return user;
+            const user = await fetchJson("/api/v1/users/me", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return { ...user, is_admin: isAdmin };
         } catch (error) {
-            return { id: userId, userName: "Account" };
+            return null;
         }
     })();
 
     return currentUserPromise;
+}
+
+function cacheCurrentUser(user) {
+    const claims = decodeJwtPayload(getToken());
+    currentUserPromise = Promise.resolve({
+        ...user,
+        is_admin: Boolean(claims?.is_admin ?? user?.is_admin),
+    });
+}
+
+function initProfileMenu(container) {
+    const menu = container.querySelector("[data-profile-menu]");
+    const toggle = container.querySelector("[data-profile-toggle]");
+    const dropdown = container.querySelector("[data-profile-dropdown]");
+    const logoutAction = container.querySelector("[data-logout-action]");
+
+    if (!menu || !toggle || !dropdown || !logoutAction) {
+        return;
+    }
+
+    const closeMenu = () => {
+        menu.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+    };
+
+    const openMenu = () => {
+        menu.classList.add("is-open");
+        toggle.setAttribute("aria-expanded", "true");
+    };
+
+    toggle.addEventListener("click", () => {
+        if (menu.classList.contains("is-open")) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+
+    toggle.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            openMenu();
+            const firstItem = dropdown.querySelector(".profile-menu-item");
+            firstItem?.focus();
+        }
+    });
+
+    dropdown.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeMenu();
+            toggle.focus();
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    logoutAction.addEventListener("click", () => {
+        clearToken();
+        window.location.href = "/index.html";
+    });
 }
 
 function initLoginPage() {
@@ -193,6 +368,13 @@ function initLoginPage() {
     const message = document.getElementById("login-message");
     if (!form || !message) {
         return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("registered") === "1") {
+        message.textContent = "Account created. You can sign in now.";
+    } else if (params.get("session") === "expired") {
+        message.textContent = "Your session expired. Please sign in again.";
     }
 
     form.addEventListener("submit", async (event) => {
@@ -231,31 +413,7 @@ async function initIndexPage() {
     grid.innerHTML = "";
 
     places.forEach((place) => {
-        const article = document.createElement("article");
-        article.className = "place-card";
-        article.innerHTML = `
-            <a class="place-card-link" href="/place.html?id=${encodeURIComponent(place.id)}" aria-label="View details for ${escapeHtml(place.title)}">
-                <div class="place-photo">
-                    <img
-                        src="${escapeHtml(place.image)}"
-                        alt="${escapeHtml(place.title)} interior"
-                        style="object-position: ${escapeHtml(place.imagePosition || "50% 50%")};"
-                    >
-                </div>
-                <div class="place-card-body">
-                    <p class="card-kicker">${escapeHtml(place.tag)}</p>
-                    <h3>${escapeHtml(place.title)}</h3>
-                    <p class="price-tag">${formatPrice(place.price)} / night</p>
-                    <p class="card-description">${escapeHtml(place.description)}</p>
-                    <div class="card-host">
-                        <img class="user-avatar" src="${escapeHtml(getUserAvatar(place.host))}" alt="${escapeHtml(place.hostName)} avatar">
-                        <span>Hosted by ${escapeHtml(place.hostName)}</span>
-                    </div>
-                    <span class="details-button">View Details</span>
-                </div>
-            </a>
-        `;
-        grid.appendChild(article);
+        grid.appendChild(createPlaceCardElement(place));
     });
 }
 
@@ -264,6 +422,7 @@ async function initPlacePage() {
     renderPlace(place);
     await renderReviews(place.id);
     updateReviewAction(place.id);
+    await renderPlaceManagement(place);
 }
 
 async function initAddReviewPage() {
@@ -281,21 +440,22 @@ async function initAddReviewPage() {
     select.required = true;
     rating.required = true;
 
-    const places = await loadPlaces();
+    const places = await loadApiPlaces();
     const requestedPlaceId = new URLSearchParams(window.location.search).get("place_id");
+    const selectedPlace = places.find((place) => place.id === requestedPlaceId);
 
     select.innerHTML = "";
     const placeholder = document.createElement("option");
     placeholder.value = "";
     placeholder.textContent = "Choose a place";
-    placeholder.selected = !requestedPlaceId;
+    placeholder.selected = !selectedPlace;
     select.appendChild(placeholder);
 
     places.forEach((place) => {
         const option = document.createElement("option");
         option.value = place.id;
         option.textContent = `${place.title} · ${formatPrice(place.price)} / night`;
-        if (requestedPlaceId && requestedPlaceId === place.id) {
+        if (selectedPlace && requestedPlaceId === place.id) {
             option.selected = true;
             placeholder.selected = false;
         }
@@ -307,6 +467,18 @@ async function initAddReviewPage() {
         authRequired.innerHTML = `You need to <a href="/login.html?next=${encodeURIComponent(window.location.pathname + window.location.search)}">log in</a> before sending a review.`;
         form.classList.add("hidden");
         return;
+    }
+
+    if (!places.length) {
+        authRequired.classList.remove("hidden");
+        authRequired.textContent = "No real places are available to review yet. The curated home-page cards are front-end demo previews only.";
+        form.classList.add("hidden");
+        return;
+    }
+
+    if (requestedPlaceId && !selectedPlace) {
+        authRequired.classList.remove("hidden");
+        authRequired.textContent = "This selected place is only a front-end demo preview. Choose a real place from the list to publish a review.";
     }
 
     form.addEventListener("submit", async (event) => {
@@ -336,6 +508,900 @@ async function initAddReviewPage() {
     });
 }
 
+async function initAddPlacePage() {
+    const token = getToken();
+    const form = document.getElementById("place-form");
+    const message = document.getElementById("place-message");
+    const authRequired = document.getElementById("place-auth-required");
+    const titleInput = document.getElementById("title");
+    const descriptionInput = document.getElementById("description");
+    const priceInput = document.getElementById("price");
+    const phoneInput = document.getElementById("phone_number");
+    const phoneCountrySelect = document.getElementById("phone_country");
+    const phoneCountryCode = document.getElementById("phone_country_code");
+    const phoneLocalNumberInput = document.getElementById("phone_local_number");
+    const amenitiesPicker = document.getElementById("amenities-picker");
+    const amenitiesHelp = document.getElementById("amenities-help");
+    const amenityNameInput = document.getElementById("amenity-name-input");
+    const amenityCreateButton = document.getElementById("amenity-create-button");
+    const amenityCreateFeedback = document.getElementById("amenity-create-feedback");
+    const latitudeInput = document.getElementById("latitude");
+    const longitudeInput = document.getElementById("longitude");
+    const manualLatitudeInput = document.getElementById("manual-latitude");
+    const manualLongitudeInput = document.getElementById("manual-longitude");
+    const manualCoordinates = document.getElementById("manual-coordinates");
+    const toggleManualCoordinates = document.getElementById("toggle-manual-coordinates");
+    const selectedCoordinates = document.getElementById("selected-coordinates");
+    const mapStatus = document.getElementById("map-status");
+    const imageInput = document.getElementById("place-image");
+    const imagePreview = document.getElementById("place-image-preview");
+    const imagePreviewImg = document.getElementById("place-image-preview-img");
+    const addressInput = document.getElementById("place-address");
+    const searchAddressButton = document.getElementById("search-address-button");
+    const addressSearchStatus = document.getElementById("address-search-status");
+    const addressSearchResults = document.getElementById("address-search-results");
+    const submitButton = document.getElementById("create-place-submit");
+
+    if (
+        !form || !message || !authRequired || !titleInput || !descriptionInput || !priceInput
+        || !phoneInput || !phoneCountrySelect
+        || !phoneCountryCode || !phoneLocalNumberInput || !amenitiesPicker || !amenitiesHelp
+        || !amenityNameInput || !amenityCreateButton || !amenityCreateFeedback
+        || !latitudeInput || !longitudeInput || !manualLatitudeInput || !manualLongitudeInput
+        || !manualCoordinates || !toggleManualCoordinates || !selectedCoordinates || !mapStatus
+        || !imageInput || !imagePreview || !imagePreviewImg
+        || !addressInput || !searchAddressButton || !addressSearchStatus || !addressSearchResults
+        || !submitButton
+    ) {
+        return;
+    }
+
+    if (!token) {
+        authRequired.classList.remove("hidden");
+        authRequired.innerHTML = buildGuestAccessBanner(
+            "You need an account before creating a place.",
+            window.location.pathname,
+        );
+        form.classList.add("hidden");
+        return;
+    }
+
+    try {
+        const phoneController = initInternationalPhoneInput({
+            hiddenInput: phoneInput,
+            countrySelect: phoneCountrySelect,
+            dialCodeBadge: phoneCountryCode,
+            localNumberInput: phoneLocalNumberInput,
+        });
+
+        const amenityPickerController = createAmenityPicker({
+            container: amenitiesPicker,
+            helper: amenitiesHelp,
+            createInput: amenityNameInput,
+            createButton: amenityCreateButton,
+            createFeedback: amenityCreateFeedback,
+            token,
+        });
+        await amenityPickerController.load();
+
+        const mapController = initPlaceLocationPicker({
+            latitudeInput,
+            longitudeInput,
+            manualLatitudeInput,
+            manualLongitudeInput,
+            manualCoordinates,
+            toggleManualCoordinates,
+            selectedCoordinates,
+            mapStatus,
+        });
+
+        imageInput.addEventListener("change", () => {
+            const [file] = imageInput.files || [];
+            if (!file) {
+                imagePreview.classList.add("hidden");
+                imagePreviewImg.removeAttribute("src");
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            imagePreviewImg.src = objectUrl;
+            imagePreview.classList.remove("hidden");
+        });
+
+        searchAddressButton.addEventListener("click", async () => {
+            const query = addressInput.value.trim();
+            addressSearchResults.innerHTML = "";
+
+            if (!query) {
+                addressSearchStatus.textContent = "Enter an address before searching.";
+                addressSearchResults.classList.add("hidden");
+                return;
+            }
+
+            addressSearchStatus.textContent = "Searching address...";
+
+            try {
+                const results = await searchAddress(query);
+                if (!results.length) {
+                    addressSearchStatus.textContent = "No address found. Try a more precise query or place the point manually.";
+                    addressSearchResults.classList.add("hidden");
+                    return;
+                }
+
+                addressSearchResults.classList.remove("hidden");
+                addressSearchStatus.textContent = "Choose the result that matches your place.";
+
+                results.forEach((result) => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "address-result";
+                    button.textContent = result.display_name;
+                    button.addEventListener("click", () => {
+                        mapController.setCoordinates(Number(result.lat), Number(result.lon), {
+                            centerMap: true,
+                        });
+                        addressInput.value = result.display_name;
+                        addressSearchResults.classList.add("hidden");
+                        addressSearchResults.innerHTML = "";
+                        addressSearchStatus.textContent = "Address selected. You can still adjust the point on the map.";
+                    });
+                    addressSearchResults.appendChild(button);
+                });
+            } catch (error) {
+                addressSearchStatus.textContent = "Address search is unavailable right now. You can still use the map or manual coordinates.";
+                addressSearchResults.classList.add("hidden");
+            }
+        });
+
+        addressInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                searchAddressButton.click();
+            }
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            clearFormMessage(message);
+
+            try {
+                if (!form.reportValidity()) {
+                    setFormMessage(message, "Please complete the required fields before creating the place.", "error", { scroll: true });
+                    return;
+                }
+
+                const title = titleInput.value.trim();
+                const description = descriptionInput.value.trim();
+                const price = priceInput.valueAsNumber;
+                const selectedAmenities = amenityPickerController.getSelectedIds();
+                const normalizedPhoneNumber = phoneController.getValue();
+
+                const latitude = Number(latitudeInput.value);
+                const longitude = Number(longitudeInput.value);
+                if (!title) {
+                    setFormMessage(message, "Enter a title before creating the place.", "error", { scroll: true });
+                    titleInput.focus();
+                    return;
+                }
+                if (!Number.isFinite(price) || price < 0) {
+                    setFormMessage(message, "Enter a valid non-negative price before creating the place.", "error", { scroll: true });
+                    priceInput.focus();
+                    return;
+                }
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                    setFormMessage(message, "Choose a point on the map or enter valid coordinates before creating the place.", "error", { scroll: true });
+                    mapController.showManualMode();
+                    return;
+                }
+                if (phoneLocalNumberInput.value.trim() && !normalizedPhoneNumber) {
+                    setFormMessage(message, "Enter a valid phone number using the country selector and local number field.", "error", { scroll: true });
+                    phoneLocalNumberInput.focus();
+                    return;
+                }
+
+                setFormMessage(message, "Creating your place...", "info", { scroll: true });
+                submitButton.disabled = true;
+                submitButton.textContent = "Creating...";
+
+                const formData = new FormData();
+                formData.append("title", title);
+                formData.append("description", description);
+                formData.append("price", String(price));
+                formData.append("latitude", String(latitude));
+                formData.append("longitude", String(longitude));
+                if (normalizedPhoneNumber) {
+                    formData.append("phone_number", normalizedPhoneNumber);
+                }
+                selectedAmenities.forEach((amenityId) => formData.append("amenities", amenityId));
+
+                const [imageFile] = imageInput.files || [];
+                if (imageFile) {
+                    formData.append("image", imageFile);
+                }
+
+                const data = await fetchJson("/api/v1/places/", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+
+                setFormMessage(message, "Place created. Redirecting to the detail page...", "success", { scroll: true });
+                window.setTimeout(() => {
+                    window.location.href = `/place.html?id=${encodeURIComponent(data.id)}`;
+                }, 700);
+            } catch (error) {
+                console.error("Create Place submit failed:", error);
+                setFormMessage(message, error.message || "Unable to create this place right now.", "error", { scroll: true });
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = "Create Place";
+            }
+        });
+    } catch (error) {
+        console.error("Create Place page init failed:", error);
+        submitButton.disabled = true;
+        setFormMessage(
+            message,
+            "This form could not initialize correctly. Refresh the page and try again.",
+            "error",
+            { scroll: true },
+        );
+    }
+}
+
+function setFormMessage(element, text, tone = "info", { scroll = false } = {}) {
+    if (!element) {
+        return;
+    }
+
+    element.textContent = text || "";
+    element.classList.remove("is-info", "is-error", "is-success", "is-visible");
+
+    if (!text) {
+        return;
+    }
+
+    element.classList.add("is-visible", `is-${tone}`);
+
+    if (scroll) {
+        element.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+        });
+    }
+}
+
+function clearFormMessage(element) {
+    setFormMessage(element, "");
+}
+
+async function initSignupPage() {
+    const token = getToken();
+    const form = document.getElementById("signup-form");
+    const message = document.getElementById("signup-message");
+    const authRequired = document.getElementById("signup-auth-required");
+
+    if (!form || !message || !authRequired) {
+        return;
+    }
+
+    if (token) {
+        authRequired.classList.remove("hidden");
+        authRequired.innerHTML = `
+            <strong>You are already signed in.</strong>
+            <div class="banner-actions">
+                <a class="utility-link" href="/index.html">Browse places</a>
+                <a class="login-button" href="/add_place.html">Create a place</a>
+            </div>
+        `;
+        form.classList.add("hidden");
+        return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        message.textContent = "Creating your account...";
+
+        try {
+            await fetchJson("/api/v1/auth/signup", {
+                method: "POST",
+                body: JSON.stringify({
+                    first_name: form.first_name.value.trim(),
+                    last_name: form.last_name.value.trim(),
+                    email: form.email.value.trim(),
+                    password: form.password.value,
+                }),
+            });
+
+            message.textContent = "Account created. Redirecting to login...";
+            const currentUrl = new URL(window.location.href);
+            const next = currentUrl.searchParams.get("next");
+            const loginUrl = new URL("/login.html", window.location.origin);
+            loginUrl.searchParams.set("registered", "1");
+            if (next) {
+                loginUrl.searchParams.set("next", next);
+            }
+
+            window.setTimeout(() => {
+                window.location.href = loginUrl.toString();
+            }, 700);
+        } catch (error) {
+            message.textContent = error.message || "Unable to create your account right now.";
+        }
+    });
+}
+
+async function initProfilePage() {
+    const authRequired = document.getElementById("profile-auth-required");
+    const content = document.getElementById("profile-content");
+    const name = document.getElementById("profile-name");
+    const email = document.getElementById("profile-email");
+    const avatar = document.getElementById("profile-avatar");
+    const placeCount = document.getElementById("profile-place-count");
+    const role = document.getElementById("profile-role");
+    const placesGrid = document.getElementById("profile-places-grid");
+    const emptyState = document.getElementById("profile-empty-state");
+    const feedback = document.getElementById("profile-places-message");
+
+    if (!authRequired || !content || !name || !email || !avatar || !placeCount || !role || !placesGrid || !emptyState || !feedback) {
+        return;
+    }
+
+    const token = getToken();
+    if (!token) {
+        authRequired.classList.remove("hidden");
+        authRequired.innerHTML = buildGuestAccessBanner(
+            "You need an account to view your profile.",
+            window.location.pathname,
+        );
+        return;
+    }
+
+    try {
+        const user = await loadCurrentUser();
+        if (!user) {
+            return;
+        }
+        const places = await loadCurrentUserPlaces();
+
+        name.textContent = getUserLabel(user);
+        email.textContent = user.email || "No email available";
+        avatar.src = getUserAvatar(user);
+        avatar.alt = `${getUserLabel(user)} avatar`;
+        placeCount.textContent = String(places.length);
+        role.textContent = user.is_admin ? "Admin" : "Member";
+
+        placesGrid.innerHTML = "";
+        const refreshOwnedPlacesState = () => {
+            const cards = placesGrid.querySelectorAll(".place-card");
+            placeCount.textContent = String(cards.length);
+
+            if (cards.length) {
+                emptyState.classList.add("hidden");
+            } else {
+                emptyState.classList.remove("hidden");
+                emptyState.innerHTML = `
+                    <strong>No published places yet.</strong>
+                    <div class="banner-actions">
+                        <a class="login-button" href="/add_place.html">Create your first place</a>
+                    </div>
+                `;
+            }
+        };
+
+        if (places.length) {
+            places.forEach((place) => {
+                const normalizedPlace = normalizePlace({ ...place, owner: user });
+                const card = createPlaceCardElement(normalizedPlace, { showDeleteAction: true });
+                const deleteButton = card.querySelector("[data-delete-place-card]");
+                deleteButton?.addEventListener("click", async () => {
+                    feedback.textContent = "";
+                    const deleted = await deletePlaceWithConfirmation(normalizedPlace.id, {
+                        onDeleting: () => {
+                            feedback.textContent = "Deleting this place...";
+                            deleteButton.disabled = true;
+                        },
+                        onSuccess: () => {
+                            card.remove();
+                            refreshOwnedPlacesState();
+                            feedback.textContent = "Place deleted.";
+                        },
+                        onError: (error) => {
+                            deleteButton.disabled = false;
+                            feedback.textContent = error.message || "Unable to delete this place right now.";
+                        },
+                    });
+                    if (!deleted) {
+                        deleteButton.disabled = false;
+                    }
+                });
+                placesGrid.appendChild(card);
+            });
+            emptyState.classList.add("hidden");
+        } else {
+            emptyState.classList.remove("hidden");
+            emptyState.innerHTML = `
+                <strong>No published places yet.</strong>
+                <div class="banner-actions">
+                    <a class="login-button" href="/add_place.html">Create your first place</a>
+                </div>
+            `;
+        }
+
+        refreshOwnedPlacesState();
+        content.classList.remove("hidden");
+    } catch (error) {
+        authRequired.classList.remove("hidden");
+        authRequired.textContent = error.message || "Unable to load your profile right now.";
+    }
+}
+
+async function initSettingsPage() {
+    const token = getToken();
+    const authRequired = document.getElementById("settings-auth-required");
+    const settingsCard = document.getElementById("settings-card");
+    const form = document.getElementById("settings-form");
+    const message = document.getElementById("settings-message");
+    const firstName = document.getElementById("settings-first-name");
+    const lastName = document.getElementById("settings-last-name");
+
+    if (!authRequired || !settingsCard || !form || !message || !firstName || !lastName) {
+        return;
+    }
+
+    if (!token) {
+        authRequired.classList.remove("hidden");
+        authRequired.innerHTML = buildGuestAccessBanner(
+            "You need an account to edit your settings.",
+            window.location.pathname,
+        );
+        return;
+    }
+
+    try {
+        const user = await loadCurrentUser();
+        if (!user) {
+            return;
+        }
+        firstName.value = user.first_name || "";
+        lastName.value = user.last_name || "";
+        settingsCard.classList.remove("hidden");
+    } catch (error) {
+        authRequired.classList.remove("hidden");
+        authRequired.textContent = error.message || "Unable to load your settings.";
+        return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        message.textContent = "Saving your changes...";
+
+        try {
+            const updatedUser = await fetchJson("/api/v1/users/me", {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    first_name: firstName.value.trim(),
+                    last_name: lastName.value.trim(),
+                }),
+            });
+
+            cacheCurrentUser(updatedUser);
+            syncVisibleAccountName(updatedUser);
+            message.textContent = "Profile updated successfully.";
+        } catch (error) {
+            message.textContent = error.message || "Unable to save your settings right now.";
+        }
+    });
+}
+
+function initInternationalPhoneInput({ hiddenInput, countrySelect, dialCodeBadge, localNumberInput }) {
+    const sortedCountries = [...PHONE_COUNTRIES].sort((left, right) => left.name.localeCompare(right.name));
+    countrySelect.innerHTML = "";
+
+    sortedCountries.forEach((country) => {
+        const option = document.createElement("option");
+        option.value = country.iso;
+        option.textContent = country.name;
+        if (country.iso === DEFAULT_PHONE_COUNTRY) {
+            option.selected = true;
+        }
+        countrySelect.appendChild(option);
+    });
+
+    const syncPhoneNumber = () => {
+        const country = sortedCountries.find((item) => item.iso === countrySelect.value)
+            || sortedCountries.find((item) => item.iso === DEFAULT_PHONE_COUNTRY)
+            || sortedCountries[0];
+        const localDigits = String(localNumberInput.value || "").replace(/\D/g, "").replace(/^0+/, "");
+
+        dialCodeBadge.textContent = country?.dialCode || "+";
+        hiddenInput.value = localDigits ? `${country.dialCode}${localDigits}` : "";
+    };
+
+    countrySelect.addEventListener("change", syncPhoneNumber);
+    localNumberInput.addEventListener("input", syncPhoneNumber);
+    syncPhoneNumber();
+
+    return {
+        getValue() {
+            syncPhoneNumber();
+            return hiddenInput.value || null;
+        },
+    };
+}
+
+function createAmenityPicker({ container, helper, createInput, createButton, createFeedback, token }) {
+    const amenities = [];
+    const selectedIds = new Set();
+
+    const sortAmenities = () => {
+        amenities.sort((left, right) => left.name.localeCompare(right.name));
+    };
+
+    const render = () => {
+        container.innerHTML = "";
+        sortAmenities();
+
+        if (!amenities.length) {
+            container.innerHTML = '<p class="amenity-picker-empty">No amenities yet. Add the first one above.</p>';
+            return;
+        }
+
+        amenities.forEach((amenity) => {
+            const label = document.createElement("label");
+            label.className = "amenity-option";
+            label.innerHTML = `
+                <input type="checkbox" name="amenities" value="${escapeHtml(amenity.id)}" ${selectedIds.has(amenity.id) ? "checked" : ""}>
+                <span>${escapeHtml(amenity.name)}</span>
+            `;
+            label.querySelector("input")?.addEventListener("change", (event) => {
+                if (event.target.checked) {
+                    selectedIds.add(amenity.id);
+                } else {
+                    selectedIds.delete(amenity.id);
+                }
+            });
+            container.appendChild(label);
+        });
+    };
+
+    const upsertAmenity = (amenity, { select = false } = {}) => {
+        if (!amenity?.id || !amenity?.name) {
+            return;
+        }
+
+        const existing = amenities.find((item) => item.id === amenity.id);
+        if (existing) {
+            existing.name = amenity.name;
+        } else {
+            amenities.push({ id: amenity.id, name: amenity.name });
+        }
+
+        if (select) {
+            selectedIds.add(amenity.id);
+        }
+
+        render();
+    };
+
+    const createAmenity = async () => {
+        const name = createInput.value.trim();
+        if (!name) {
+            createFeedback.textContent = "Enter an amenity name before adding it.";
+            createInput.focus();
+            return;
+        }
+
+        try {
+            createButton.disabled = true;
+            createFeedback.textContent = "Adding amenity...";
+            const amenity = await fetchJson("/api/v1/amenities/", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ name }),
+            });
+
+            upsertAmenity(amenity, { select: true });
+            createInput.value = "";
+            createFeedback.textContent = "Amenity ready and selected for this place.";
+            helper.textContent = "Choose existing amenities or add a new one to the global catalog for future filtering.";
+            createInput.focus();
+        } catch (error) {
+            createFeedback.textContent = error.message || "Unable to add this amenity right now.";
+        } finally {
+            createButton.disabled = false;
+        }
+    };
+
+    createButton.addEventListener("click", () => {
+        void createAmenity();
+    });
+
+    createInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            void createAmenity();
+        }
+    });
+
+    return {
+        async load() {
+            container.innerHTML = "";
+            helper.textContent = "Loading available amenities...";
+            createFeedback.textContent = "";
+
+            try {
+                const data = await fetchJson("/api/v1/amenities/");
+                const payload = Array.isArray(data?.amenities) ? data.amenities : [];
+
+                amenities.splice(0, amenities.length, ...payload.map((amenity) => ({
+                    id: amenity.id,
+                    name: amenity.name,
+                })));
+
+                helper.textContent = amenities.length
+                    ? "Choose existing amenities or add a new one to the global catalog for future filtering."
+                    : "No amenities are in the catalog yet. Add the first one below.";
+            } catch (error) {
+                helper.textContent = "Unable to load current amenities. You can still add a new one below.";
+                amenities.splice(0, amenities.length);
+            }
+
+            render();
+        },
+        getSelectedIds() {
+            return Array.from(selectedIds);
+        },
+    };
+}
+
+function initPlaceLocationPicker({
+    latitudeInput,
+    longitudeInput,
+    manualLatitudeInput,
+    manualLongitudeInput,
+    manualCoordinates,
+    toggleManualCoordinates,
+    selectedCoordinates,
+    mapStatus,
+}) {
+    const mapElement = document.getElementById("place-map");
+    const defaultCoords = [46.603354, 1.888334];
+    let map = null;
+    let marker = null;
+
+    const updateSelectedCoordinates = (latitude, longitude) => {
+        if (isValidLatitude(latitude) && isValidLongitude(longitude)) {
+            selectedCoordinates.textContent = `Selected: ${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`;
+        } else {
+            selectedCoordinates.textContent = "No location selected yet.";
+        }
+    };
+
+    const syncCoordinates = (latitude, longitude, { centerMap = false } = {}) => {
+        latitudeInput.value = latitude;
+        longitudeInput.value = longitude;
+        manualLatitudeInput.value = latitude;
+        manualLongitudeInput.value = longitude;
+        updateSelectedCoordinates(latitude, longitude);
+
+        if (map && window.L && isValidLatitude(latitude) && isValidLongitude(longitude)) {
+            const latLng = [Number(latitude), Number(longitude)];
+            if (!marker) {
+                marker = window.L.marker(latLng, { draggable: true }).addTo(map);
+                marker.on("dragend", () => {
+                    const nextLatLng = marker.getLatLng();
+                    syncCoordinates(nextLatLng.lat, nextLatLng.lng);
+                });
+            } else {
+                marker.setLatLng(latLng);
+            }
+
+            if (centerMap) {
+                map.setView(latLng, Math.max(map.getZoom(), 9));
+            }
+        }
+    };
+
+    const showManualMode = (forceOpen = null) => {
+        const shouldOpen = forceOpen ?? manualCoordinates.classList.contains("hidden");
+        manualCoordinates.classList.toggle("hidden", !shouldOpen);
+        toggleManualCoordinates.textContent = shouldOpen
+            ? "Hide manual coordinates"
+            : "Enter coordinates manually";
+    };
+
+    toggleManualCoordinates.addEventListener("click", () => {
+        showManualMode();
+    });
+
+    const syncFromManualInputs = () => {
+        const latitude = Number(manualLatitudeInput.value);
+        const longitude = Number(manualLongitudeInput.value);
+        if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+            return;
+        }
+
+        syncCoordinates(latitude, longitude, { centerMap: true });
+    };
+
+    manualLatitudeInput.addEventListener("input", syncFromManualInputs);
+    manualLongitudeInput.addEventListener("input", syncFromManualInputs);
+
+    if (window.L && mapElement) {
+        map = window.L.map(mapElement, {
+            zoomControl: true,
+        }).setView(defaultCoords, 5);
+
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+
+        map.on("click", (event) => {
+            const { lat, lng } = event.latlng;
+            syncCoordinates(lat, lng, { centerMap: true });
+        });
+
+        mapStatus.textContent = "Click on the map to choose a location, or drag the marker after placing it.";
+    } else {
+        showManualMode(true);
+        mapStatus.textContent = "Map unavailable. Enter the coordinates manually below.";
+    }
+
+    return {
+        showManualMode: () => showManualMode(true),
+        setCoordinates: (latitude, longitude, options = {}) => {
+            syncCoordinates(latitude, longitude, options);
+        },
+    };
+}
+
+async function loadCurrentUserPlaces() {
+    const token = getToken();
+    if (!token) {
+        return [];
+    }
+
+    return fetchJson("/api/v1/users/me/places", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
+function createPlaceCardElement(place, options = {}) {
+    const article = document.createElement("article");
+    article.className = "place-card";
+    article.dataset.placeId = place.id;
+    article.innerHTML = buildPlaceCardMarkup(place);
+
+    if (options.showDeleteAction) {
+        const actions = document.createElement("div");
+        actions.className = "place-card-actions";
+        actions.innerHTML = `
+            <button type="button" class="danger-button danger-button-soft" data-delete-place-card>
+                Delete Place
+            </button>
+        `;
+        article.appendChild(actions);
+    }
+
+    return article;
+}
+
+function buildPlaceCardMarkup(place) {
+    return `
+        <a class="place-card-link" href="/place.html?id=${encodeURIComponent(place.id)}" aria-label="View details for ${escapeHtml(place.title)}">
+            <div class="place-photo">
+                <img
+                    src="${escapeHtml(place.image)}"
+                    alt="${escapeHtml(place.title)} interior"
+                    style="object-position: ${escapeHtml(place.imagePosition || "50% 50%")};"
+                >
+            </div>
+            <div class="place-card-body">
+                <p class="card-kicker">${escapeHtml(place.tag)}</p>
+                <h3>${escapeHtml(place.title)}</h3>
+                <p class="price-tag">${formatPrice(place.price)} / night</p>
+                <p class="card-description">${escapeHtml(place.description)}</p>
+                <div class="card-host">
+                    <img class="user-avatar" src="${escapeHtml(getUserAvatar(place.host))}" alt="${escapeHtml(place.hostName)} avatar">
+                    <span>Hosted by ${escapeHtml(place.hostName)}</span>
+                </div>
+                <span class="details-button">View Details</span>
+            </div>
+        </a>
+    `;
+}
+
+function syncVisibleAccountName(user) {
+    const label = getUserLabel(user);
+    document.querySelectorAll(".profile-name").forEach((element) => {
+        element.textContent = label;
+    });
+    const profileName = document.getElementById("profile-name");
+    if (profileName) {
+        profileName.textContent = label;
+    }
+}
+
+async function renderPlaceManagement(place) {
+    const deleteButton = document.getElementById("delete-place-action");
+    const actionMessage = document.getElementById("place-action-message");
+    if (!deleteButton || !actionMessage) {
+        return;
+    }
+
+    const user = await loadCurrentUser();
+    if (!canManagePlace(place, user)) {
+        deleteButton.classList.add("hidden");
+        return;
+    }
+
+    deleteButton.classList.remove("hidden");
+    deleteButton.addEventListener("click", async () => {
+        actionMessage.textContent = "";
+        const deleted = await deletePlaceWithConfirmation(place.id, {
+            onDeleting: () => {
+                deleteButton.disabled = true;
+                actionMessage.textContent = "Deleting this place...";
+            },
+            onSuccess: () => {
+                actionMessage.textContent = "Place deleted. Redirecting...";
+                window.setTimeout(() => {
+                    window.location.href = "/profile.html";
+                }, 500);
+            },
+            onError: (error) => {
+                deleteButton.disabled = false;
+                actionMessage.textContent = error.message || "Unable to delete this place right now.";
+            },
+        });
+        if (!deleted) {
+            deleteButton.disabled = false;
+        }
+    });
+}
+
+function canManagePlace(place, user) {
+    return Boolean(
+        place?.ownerId
+        && user
+        && (user.is_admin || user.id === place.ownerId),
+    );
+}
+
+async function deletePlaceWithConfirmation(placeId, { onDeleting, onSuccess, onError } = {}) {
+    if (!placeId) {
+        return false;
+    }
+    if (!window.confirm("Delete this place permanently?")) {
+        return false;
+    }
+
+    onDeleting?.();
+    try {
+        await fetchJson(`/api/v1/places/${encodeURIComponent(placeId)}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+            },
+        });
+        onSuccess?.();
+        return true;
+    } catch (error) {
+        onError?.(error);
+        return false;
+    }
+}
+
 async function resolvePlaceFromQuery() {
     const id = new URLSearchParams(window.location.search).get("id");
 
@@ -358,12 +1424,17 @@ function renderPlace(place) {
     const host = document.getElementById("place-host");
     const hostAvatar = document.getElementById("host-avatar");
     const location = document.getElementById("place-location");
+    const phoneCard = document.getElementById("place-phone-card");
+    const phoneLink = document.getElementById("place-phone-link");
     const description = document.getElementById("place-description");
     const tag = document.getElementById("place-tag");
     const amenities = document.getElementById("place-amenities");
     const image = document.getElementById("place-image");
 
-    if (!title || !price || !host || !hostAvatar || !location || !description || !tag || !amenities || !image) {
+    if (
+        !title || !price || !host || !hostAvatar || !location || !phoneCard || !phoneLink
+        || !description || !tag || !amenities || !image
+    ) {
         return;
     }
 
@@ -378,6 +1449,16 @@ function renderPlace(place) {
     image.src = place.image;
     image.alt = `${place.title} interior`;
     image.style.objectPosition = place.imagePosition || "50% 50%";
+
+    if (place.phoneNumber) {
+        phoneCard.classList.remove("hidden");
+        phoneLink.textContent = place.phoneNumber;
+        phoneLink.href = `tel:${buildPhoneHref(place.phoneNumber)}`;
+    } else {
+        phoneCard.classList.add("hidden");
+        phoneLink.textContent = "";
+        phoneLink.href = "#";
+    }
 
     amenities.innerHTML = "";
     (place.amenities.length ? place.amenities : ["WiFi", "Comfort", "Quiet"]).forEach((item) => {
@@ -436,26 +1517,59 @@ function updateReviewAction(placeId) {
         return;
     }
 
+    const isDemoPlace = isDemoPlaceId(placeId);
+
     if (getToken()) {
-        action.textContent = "Add Review";
-        action.href = `/add_review.html?place_id=${encodeURIComponent(placeId)}`;
+        action.textContent = isDemoPlace ? "Review a Real Place" : "Add Review";
+        action.href = isDemoPlace
+            ? "/add_review.html"
+            : `/add_review.html?place_id=${encodeURIComponent(placeId)}`;
     } else {
-        action.textContent = "Login to Add Review";
-        action.href = `/login.html?next=${encodeURIComponent(`/add_review.html?place_id=${placeId}`)}`;
+        const next = isDemoPlace
+            ? "/add_review.html"
+            : `/add_review.html?place_id=${placeId}`;
+        action.textContent = isDemoPlace ? "Login to Review Real Places" : "Login to Add Review";
+        action.href = `/login.html?next=${encodeURIComponent(next)}`;
     }
 }
 
 async function loadPlaces() {
-    try {
-        const data = await fetchJson("/api/v1/places/");
-        if (Array.isArray(data) && data.length) {
-            return data.map((place, index) => normalizePlace(place, index));
-        }
-    } catch (error) {
-        // Keep the front usable with curated fallback places.
+    const apiPlaces = await loadApiPlaces();
+    if (apiPlaces.length) {
+        return apiPlaces;
     }
 
     return FALLBACK_PLACES.map((place) => normalizePlace(place));
+}
+
+async function loadApiPlaces() {
+    try {
+        const data = await fetchJson("/api/v1/places/");
+        if (Array.isArray(data)) {
+            const ownerCache = new Map();
+
+            return await Promise.all(data.map(async (place, index) => {
+                let owner = place.owner || null;
+                const ownerId = owner?.id || place.owner_id;
+
+                if (!owner && ownerId) {
+                    if (!ownerCache.has(ownerId)) {
+                        ownerCache.set(
+                            ownerId,
+                            fetchJson(`/api/v1/users/${ownerId}`).catch(() => null),
+                        );
+                    }
+                    owner = await ownerCache.get(ownerId);
+                }
+
+                return normalizePlace({ ...place, owner }, index);
+            }));
+        }
+    } catch (error) {
+        // The browse flow can use front-end demo places as a fallback.
+    }
+
+    return [];
 }
 
 async function loadReviews(placeId) {
@@ -501,6 +1615,10 @@ function normalizePlace(place, index = 0) {
     const amenities = Array.isArray(place.amenities)
         ? place.amenities.map((item) => typeof item === "string" ? item : item.name).filter(Boolean)
         : media.amenities || [];
+    const customAmenities = Array.isArray(place.custom_amenities)
+        ? place.custom_amenities.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+    const mergedAmenities = uniqueValues([...amenities, ...customAmenities]);
 
     const owner = place.owner || {
         id: place.owner_id || media.hostSeed,
@@ -508,19 +1626,23 @@ function normalizePlace(place, index = 0) {
         first_name: media.hostName?.split(" ")[0] || "HBnB",
         last_name: media.hostName?.split(" ").slice(1).join(" ") || "Host",
     };
+    const ownerId = place.owner_id || (place.owner && !isDemoPlaceId(place.id) ? place.owner.id : null);
 
     return {
         id: place.id || media.id || `place-${index + 1}`,
+        ownerId,
         title: place.title || media.title || "Untitled stay",
         price: Number(place.price || media.price || 0),
         description: place.description || media.description || "A calm, well-balanced stay designed for simple comfort.",
         location: place.location || formatLocation(place, media.location),
         host: owner,
         hostName: getUserLabel(owner) || media.hostName || "HBnB Host",
-        image: place.image || media.image,
+        image: place.image_url || place.image || media.image,
         imagePosition: place.imagePosition || media.imagePosition || "50% 50%",
-        tag: place.tag || media.tag || amenities[0] || "Curated stay",
-        amenities,
+        phoneNumber: place.phone_number || place.phoneNumber || null,
+        customAmenities,
+        tag: place.tag || media.tag || mergedAmenities[0] || "Curated stay",
+        amenities: mergedAmenities,
     };
 }
 
@@ -538,6 +1660,10 @@ function resolvePlaceMedia(place, index = 0) {
 
     const fallbackKey = PLACE_MEDIA_ORDER[stableIndex(place?.id || place?.title || String(index)) % PLACE_MEDIA_ORDER.length];
     return { id: fallbackKey, ...PLACE_MEDIA[fallbackKey] };
+}
+
+function isDemoPlaceId(placeId) {
+    return Boolean(placeId && PLACE_MEDIA[placeId]);
 }
 
 function getUserAvatar(user) {
@@ -588,12 +1714,58 @@ function decodeJwtPayload(token) {
     }
 }
 
+function buildGuestAccessBanner(text, nextPath) {
+    const target = nextPath || window.location.pathname;
+    const loginHref = `/login.html?next=${encodeURIComponent(target)}`;
+    const signupHref = `/signup.html?next=${encodeURIComponent(target)}`;
+
+    return `
+        <strong>${escapeHtml(text)}</strong>
+        <div class="banner-actions">
+            <a class="utility-link" href="${signupHref}">Sign up</a>
+            <a class="login-button" href="${loginHref}">Login</a>
+        </div>
+    `;
+}
+
+function uniqueValues(values) {
+    const normalized = [];
+    const seen = new Set();
+
+    values.forEach((value) => {
+        const item = String(value || "").trim();
+        if (!item) {
+            return;
+        }
+        const lowered = item.toLowerCase();
+        if (seen.has(lowered)) {
+            return;
+        }
+        seen.add(lowered);
+        normalized.push(item);
+    });
+
+    return normalized;
+}
+
+function buildPhoneHref(phoneNumber) {
+    return String(phoneNumber || "").replace(/[^\d+]/g, "");
+}
+
 function formatLocation(place, fallback) {
     if (typeof place?.latitude === "number" && typeof place?.longitude === "number") {
         return `Lat ${place.latitude.toFixed(2)} · Lng ${place.longitude.toFixed(2)}`;
     }
 
     return fallback || "France";
+}
+
+function isValidLatitude(value) {
+    return Number.isFinite(Number(value)) && Number(value) >= -90 && Number(value) <= 90;
+}
+
+function isValidLongitude(value) {
+    return Number.isFinite(Number(value)) && Number(value) >= -180 && Number(value) <= 180;
 }
 
 function stableIndex(value) {
@@ -607,7 +1779,7 @@ function stableIndex(value) {
 
 async function fetchJson(url, options = {}) {
     const headers = new Headers(options.headers || {});
-    if (options.body && !headers.has("Content-Type")) {
+    if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
         headers.set("Content-Type", "application/json");
     }
 
@@ -619,11 +1791,51 @@ async function fetchJson(url, options = {}) {
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+        if (response.status === 401 && shouldHandleUnauthorized(url)) {
+            handleUnauthorizedSession();
+        }
         const message = payload.error || payload.message || "Request failed.";
-        throw new Error(message);
+        const error = new Error(message);
+        error.status = response.status;
+        throw error;
     }
 
     return payload;
+}
+
+function shouldHandleUnauthorized(url) {
+    return Boolean(
+        getToken()
+        && !String(url).includes("/api/v1/auth/login")
+        && !String(url).includes("/api/v1/auth/signup"),
+    );
+}
+
+function handleUnauthorizedSession() {
+    clearToken();
+    const next = `${window.location.pathname}${window.location.search}`;
+    const loginUrl = new URL("/login.html", window.location.origin);
+    loginUrl.searchParams.set("session", "expired");
+    loginUrl.searchParams.set("next", next);
+    window.location.href = loginUrl.toString();
+}
+
+async function searchAddress(query) {
+    const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(query)}`,
+        {
+            headers: {
+                Accept: "application/json",
+            },
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error("Address search failed.");
+    }
+
+    const payload = await response.json().catch(() => []);
+    return Array.isArray(payload) ? payload : [];
 }
 
 function formatPrice(value) {

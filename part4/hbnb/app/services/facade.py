@@ -65,6 +65,15 @@ class HBnBFacade:
         self.amenity_repo.add(amenity)
         return amenity
 
+    def create_or_get_amenity(self, amenity_data):
+        existing_amenity = self.amenity_repo.get_amenity_by_name(amenity_data['name'])
+        if existing_amenity:
+            return existing_amenity, False
+
+        amenity = Amenity(**amenity_data)
+        self.amenity_repo.add(amenity)
+        return amenity, True
+
     def get_amenity(self, amenity_id):
         return self.amenity_repo.get(amenity_id)
 
@@ -89,12 +98,7 @@ class HBnBFacade:
         if not owner:
             raise ValueError("Owner with the given ID does not exist")
 
-        amenities = []
-        for amenity_id in place_data.get('amenities', []):
-            amenity = self.get_amenity(amenity_id)
-            if not amenity:
-                raise ValueError(f"Amenity with ID '{amenity_id}' does not exist")
-            amenities.append(amenity)
+        amenities = self._resolve_amenities(place_data.get('amenities', []))
 
         place = Place(
             title=place_data['title'],
@@ -102,7 +106,9 @@ class HBnBFacade:
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
-            owner=owner
+            owner=owner,
+            image_url=place_data.get('image_url'),
+            phone_number=place_data.get('phone_number'),
         )
 
         for amenity in amenities:
@@ -116,6 +122,9 @@ class HBnBFacade:
 
     def get_all_places(self):
         return self.place_repo.get_all()
+
+    def get_places_by_owner_id(self, owner_id):
+        return self.place_repo.get_places_by_owner_id(owner_id)
 
     def update_place(self, place_id, place_data):
         place = self.get_place(place_id)
@@ -131,21 +140,39 @@ class HBnBFacade:
                 update_data['owner'] = owner
             elif key == 'amenities':
                 pass  # handled separately below
+            elif key == 'custom_amenities':
+                continue
             else:
                 update_data[key] = value
 
         # Handle amenities update - clear and re-add
         if 'amenities' in place_data:
-            new_amenities = []
-            for amenity_id in place_data['amenities']:
-                amenity = self.get_amenity(amenity_id)
-                if not amenity:
-                    raise ValueError(f"Amenity with ID '{amenity_id}' does not exist")
-                new_amenities.append(amenity)
-            update_data['amenities'] = new_amenities
+            update_data['amenities'] = self._resolve_amenities(place_data['amenities'])
 
         self.place_repo.update(place_id, update_data)
         return self.get_place(place_id)
+
+    def delete_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            return None
+        self.place_repo.delete(place_id)
+        return place
+
+    def _resolve_amenities(self, amenity_ids):
+        amenities = []
+        seen_ids = set()
+
+        for amenity_id in amenity_ids or []:
+            if not amenity_id or amenity_id in seen_ids:
+                continue
+            amenity = self.get_amenity(amenity_id)
+            if not amenity:
+                raise ValueError(f"Amenity with ID '{amenity_id}' does not exist")
+            seen_ids.add(amenity_id)
+            amenities.append(amenity)
+
+        return amenities
 
     def create_review(self, review_data):
         user = self.get_user(review_data['user_id'])

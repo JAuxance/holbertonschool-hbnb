@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow">New account</p>
+            <h1>Sign Up</h1>
+        </div>
+        <p class="section-text">
+            Create your HBnB account to publish places, leave reviews, and keep your stays connected to the API.
+        </p>
+    </div>
+
+    <div id="signup-auth-required" class="info-banner hidden" aria-live="polite"></div>
+
+    <div class="form-card">
+        <form id="signup-form" class="form" action="/api/v1/auth/signup" method="post">
+            <div class="field-grid field-grid-2">
+                <div class="field">
+                    <label for="first_name">First Name</label>
+                    <input
+                        id="first_name"
+                        name="first_name"
+                        type="text"
+                        maxlength="50"
+                        autocomplete="given-name"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="last_name">Last Name</label>
+                    <input
+                        id="last_name"
+                        name="last_name"
+                        type="text"
+                        maxlength="50"
+                        autocomplete="family-name"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="email">Email</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minlength="6"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="primary-button">Create Account</button>
+            <p id="signup-message" class="form-message" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}

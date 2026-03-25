@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+{% endblock %}
+
+{% block extra_scripts %}
+<script
+    defer
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+{% endblock %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow">Host tools</p>
+            <h1>Create Place</h1>
+        </div>
+        <p class="section-text">
+            Publish a real place from the website and send it straight to the Flask API.
+        </p>
+    </div>
+
+    <div id="place-auth-required" class="info-banner hidden" aria-live="polite"></div>
+
+    <div class="form-card">
+        <form id="place-form" class="form" action="/api/v1/places/" method="post" enctype="multipart/form-data">
+            <div class="field">
+                <label for="title">Title</label>
+                <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Canal Loft"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="description">Description</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    placeholder="Describe the place, its atmosphere, and what makes it useful for guests."
+                ></textarea>
+            </div>
+
+            <div class="field-grid field-grid-2">
+                <div class="field">
+                    <label for="price">Price</label>
+                    <input
+                        id="price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="145"
+                        required
+                    >
+                </div>
+                <div class="field">
+                    <label for="phone_local_number">Phone number</label>
+                    <div class="phone-field-shell">
+                        <div class="phone-country-row">
+                            <select id="phone_country" name="phone_country" autocomplete="country-name"></select>
+                        </div>
+                        <div class="phone-number-row">
+                            <span id="phone_country_code" class="phone-code-pill" aria-live="polite">+33</span>
+                            <input
+                                id="phone_local_number"
+                                type="tel"
+                                inputmode="tel"
+                                placeholder="6 12 34 56 78"
+                            >
+                        </div>
+                        <input id="phone_number" name="phone_number" type="hidden">
+                    </div>
+                    <p class="field-help">
+                        Choose the country first. We store one international number starting with the correct + code.
+                    </p>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="amenity-name-input">Choose Amenities</label>
+                <div class="amenity-create-row">
+                    <input
+                        id="amenity-name-input"
+                        type="text"
+                        maxlength="100"
+                        placeholder="Sauna"
+                    >
+                    <button id="amenity-create-button" type="button" class="utility-link utility-link-inline">
+                        Add amenity
+                    </button>
+                </div>
+                <p id="amenity-create-feedback" class="field-help" aria-live="polite"></p>
+                <div id="amenities-picker" class="amenity-picker" aria-live="polite"></div>
+                <p id="amenities-help" class="field-help">
+                    Choose existing amenities or add a new one to the global catalog for future filtering.
+                </p>
+            </div>
+
+            <div class="field">
+                <label for="place-image">Place image</label>
+                <input
+                    id="place-image"
+                    name="image"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                >
+                <p class="field-help">
+                    Accepted formats: JPG, PNG, WEBP up to 5 MB. If you skip this, the interface keeps its fallback image.
+                </p>
+                <div id="place-image-preview" class="image-preview hidden">
+                    <img id="place-image-preview-img" src="" alt="Selected place preview">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="place-address">Search an address</label>
+                <div class="address-search">
+                    <input
+                        id="place-address"
+                        name="address"
+                        type="text"
+                        autocomplete="street-address"
+                        placeholder="10 rue de Rivoli, Paris"
+                    >
+                    <button id="search-address-button" type="button" class="utility-link utility-link-inline">
+                        Search
+                    </button>
+                </div>
+                <p id="address-search-status" class="field-help">
+                    Search an address to place the marker automatically on the map.
+                </p>
+                <div id="address-search-results" class="address-results hidden" aria-live="polite"></div>
+            </div>
+
+            <div class="field">
+                <label for="place-map">Location on the map</label>
+                <div class="map-card">
+                    <div id="place-map" class="place-map" aria-label="Choose a point on the map"></div>
+                    <div class="map-toolbar">
+                        <p id="map-status" class="field-help">
+                            Click on the map to place your marker, or use manual coordinates below.
+                        </p>
+                        <button
+                            id="toggle-manual-coordinates"
+                            type="button"
+                            class="utility-link utility-link-inline"
+                        >
+                            Enter coordinates manually
+                        </button>
+                    </div>
+                    <p id="selected-coordinates" class="selected-coordinates">No location selected yet.</p>
+                </div>
+                <input id="latitude" name="latitude" type="hidden">
+                <input id="longitude" name="longitude" type="hidden">
+            </div>
+
+            <div id="manual-coordinates" class="field-grid field-grid-2 hidden">
+                <div class="field">
+                    <label for="manual-latitude">Latitude</label>
+                    <input
+                        id="manual-latitude"
+                        type="number"
+                        min="-90"
+                        max="90"
+                        step="0.0001"
+                        placeholder="48.8566"
+                    >
+                </div>
+                <div class="field">
+                    <label for="manual-longitude">Longitude</label>
+                    <input
+                        id="manual-longitude"
+                        type="number"
+                        min="-180"
+                        max="180"
+                        step="0.0001"
+                        placeholder="2.3522"
+                    >
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <p id="place-message" class="form-message" aria-live="polite"></p>
+                <button id="create-place-submit" type="submit" class="primary-button form-submit-button">Create Place</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

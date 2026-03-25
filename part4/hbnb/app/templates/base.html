@@ -9,8 +9,10 @@
         content="HBnB front-end experience for browsing places, viewing details, and sharing reviews."
     >
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    {% block extra_styles %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
 </head>
 <body data-page="{{ page_name }}">
     <div class="site-backdrop"></div>
@@ -31,7 +33,7 @@
             <nav class="main-nav" aria-label="Primary navigation">
                 <a
                     href="{{ url_for('web.index') }}"
-                    class="{{ 'is-active' if page_name in ['index', 'place', 'add-review'] else '' }}"
+                    class="{{ 'is-active' if page_name in ['index', 'place', 'add-review', 'add-place', 'signup', 'profile', 'settings'] else '' }}"
                 >
                     Places
                 </a>
@@ -39,13 +41,16 @@
             </nav>
 
             <div class="auth-actions" id="auth-actions">
-                <a
-                    href="{{ url_for('web.login') }}"
-                    class="login-button"
-                    id="auth-link"
-                >
-                    Login
-                </a>
+                <div class="auth-cluster auth-cluster-guest">
+                    <a href="{{ url_for('web.signup') }}" class="utility-link">Sign up</a>
+                    <a
+                        href="{{ url_for('web.login') }}"
+                        class="login-button"
+                        id="auth-link"
+                    >
+                        Login
+                    </a>
+                </div>
             </div>
         </header>
 

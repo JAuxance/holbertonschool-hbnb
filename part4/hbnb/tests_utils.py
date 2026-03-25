@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 import unittest
 import uuid
@@ -15,6 +16,7 @@ class APITestCase(unittest.TestCase):
     def setUp(self):
         fd, self.db_path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
+        self.upload_dir = tempfile.mkdtemp(prefix="hbnb-place-images-")
 
         self.app = create_app(
             "config.TestingConfig",
@@ -22,6 +24,7 @@ class APITestCase(unittest.TestCase):
                 "SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.db_path}",
                 "SECRET_KEY": "test-secret-key-for-hbnb-part4-1234567890",
                 "JWT_SECRET_KEY": "test-jwt-secret-key-for-hbnb-part4-1234567890",
+                "PLACE_IMAGE_UPLOAD_DIR": self.upload_dir,
             },
         )
         self.client = self.app.test_client()
@@ -40,6 +43,8 @@ class APITestCase(unittest.TestCase):
 
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
+
+        shutil.rmtree(self.upload_dir, ignore_errors=True)
 
     def auth_headers(self, token):
         return {"Authorization": f"Bearer {token}"}
@@ -82,8 +87,36 @@ class APITestCase(unittest.TestCase):
         )
         return response, email, password
 
+    def signup_user(
+        self,
+        *,
+        first_name="Jane",
+        last_name="Doe",
+        email=None,
+        password="secret123",
+    ):
+        if email is None:
+            email = f"{uuid.uuid4().hex[:8]}@example.com"
+
+        response = self.client.post(
+            "/api/v1/auth/signup",
+            json={
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "password": password,
+            },
+        )
+        return response, email, password
+
     def create_and_login_user(self, **kwargs):
         response, email, password = self.create_user(**kwargs)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        token = self.get_token(email, password)
+        return response, token, email, password
+
+    def signup_and_login_user(self, **kwargs):
+        response, email, password = self.signup_user(**kwargs)
         self.assertEqual(response.status_code, 201, response.get_json())
         token = self.get_token(email, password)
         return response, token, email, password
@@ -108,6 +141,7 @@ class APITestCase(unittest.TestCase):
         price=50.0,
         latitude=48.8566,
         longitude=2.3522,
+        phone_number=None,
         amenities=None,
     ):
         response = self.client.post(
@@ -118,6 +152,7 @@ class APITestCase(unittest.TestCase):
                 "price": price,
                 "latitude": latitude,
                 "longitude": longitude,
+                "phone_number": phone_number,
                 "amenities": amenities or [],
             },
             headers=self.auth_headers(token),
