@@ -1,5 +1,4 @@
 from app import create_app
-from app.models.user import User
 from app.services import facade
 from app.extensions import db
 
@@ -8,7 +7,7 @@ app = create_app()
 
 def init_admin_user():
     """Create the default admin user in the DB if it doesn't exist."""
-    admin = facade.ensure_admin_user('admin@example.com', 'admin123')
+    admin = facade.ensure_admin_user('admin@hbnb.io', 'admin1234')
     print(f"Admin user ready: {admin.email} (id={admin.id})")
 
 

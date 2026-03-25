@@ -72,7 +72,7 @@ hbnb/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd part3/hbnb
+cd part4/hbnb
 
 # Install dependencies
 pip install -r requirements.txt
@@ -82,6 +82,7 @@ python run.py
 ```
 
 The API will be available at `http://localhost:5000/api/v1/`
+`run.py` also bootstraps the default admin user if it is missing.
 
 ---
 

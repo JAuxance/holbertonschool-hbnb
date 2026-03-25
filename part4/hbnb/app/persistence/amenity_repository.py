@@ -1,5 +1,4 @@
 from app.models.amenity import Amenity
-from app.extensions import db
 from app.persistence.repository import SQLAlchemyRepository
 
 class AmenityRepository(SQLAlchemyRepository):
@@ -12,8 +11,9 @@ class AmenityRepository(SQLAlchemyRepository):
 
     def get_amenities_by_place_id(self, place_id):
         """Get all amenities for a specific place."""
+        from app.extensions import db
         from app.models.place import Place
-        place = Place.query.get(place_id)
+        place = db.session.get(Place, place_id)
         if place:
             return place.amenities
         return []

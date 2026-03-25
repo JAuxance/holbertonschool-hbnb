@@ -43,14 +43,14 @@ CREATE TABLE places (
     price DECIMAL(10, 2) NOT NULL,
     latitude FLOAT NOT NULL,
     longitude FLOAT NOT NULL,
-    owner_id CHAR(36) NOT NULL,
+    user_id CHAR(36) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Index for faster lookups by owner
-CREATE INDEX idx_places_owner_id ON places(owner_id);
+CREATE INDEX idx_places_user_id ON places(user_id);
 
 -- ============================================
 -- Reviews Table

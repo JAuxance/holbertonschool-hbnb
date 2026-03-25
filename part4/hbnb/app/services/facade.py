@@ -1,4 +1,3 @@
-from app.persistence.repository import InMemoryRepository, SQLAlchemyRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.review import Review
@@ -17,12 +16,16 @@ class HBnBFacade:
         self.amenity_repo = AmenityRepository()
 
     def create_user(self, user_data):
+        existing_user = self.get_user_by_email(user_data['email'])
+        if existing_user:
+            raise ValueError("Email already registered")
+
         user = User(**user_data)
         user.hash_password(user_data['password'])
         self.user_repo.add(user)
         return user
 
-    def ensure_admin_user(self, email='admin@example.com', password='admin123'):
+    def ensure_admin_user(self, email='admin@hbnb.io', password='admin1234'):
         """Ensure a default admin user exists in the database.
 
         - If no user with the given email exists, create one with is_admin=True.
@@ -54,6 +57,10 @@ class HBnBFacade:
         return user
 
     def create_amenity(self, amenity_data):
+        existing_amenity = self.amenity_repo.get_amenity_by_name(amenity_data['name'])
+        if existing_amenity:
+            raise ValueError("Amenity already exists")
+
         amenity = Amenity(**amenity_data)
         self.amenity_repo.add(amenity)
         return amenity
@@ -67,6 +74,11 @@ class HBnBFacade:
     def update_amenity(self, amenity_id, amenity_data):
         amenity = self.get_amenity(amenity_id)
         if amenity:
+            new_name = amenity_data.get('name')
+            if new_name:
+                existing_amenity = self.amenity_repo.get_amenity_by_name(new_name)
+                if existing_amenity and existing_amenity.id != amenity_id:
+                    raise ValueError("Amenity already exists")
             self.amenity_repo.update(amenity_id, amenity_data)
         return amenity
 
@@ -77,6 +89,13 @@ class HBnBFacade:
         if not owner:
             raise ValueError("Owner with the given ID does not exist")
 
+        amenities = []
+        for amenity_id in place_data.get('amenities', []):
+            amenity = self.get_amenity(amenity_id)
+            if not amenity:
+                raise ValueError(f"Amenity with ID '{amenity_id}' does not exist")
+            amenities.append(amenity)
+
         place = Place(
             title=place_data['title'],
             description=place_data.get('description', ''),
@@ -86,10 +105,7 @@ class HBnBFacade:
             owner=owner
         )
 
-        for amenity_id in place_data.get('amenities', []):
-            amenity = self.get_amenity(amenity_id)
-            if not amenity:
-                raise ValueError(f"Amenity with ID '{amenity_id}' does not exist")
+        for amenity in amenities:
             place.add_amenity(amenity)
 
         self.place_repo.add(place)

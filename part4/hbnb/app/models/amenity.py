@@ -6,7 +6,7 @@ from sqlalchemy import Column, String
 class Amenity(BaseModel):
 	__tablename__ = 'amenities'
 
-	name = Column(String(100), nullable=False)
+	name = Column(String(100), nullable=False, unique=True)
 	places = relationship('Place', secondary='place_amenity', back_populates='amenities')
 
 	def __init__(self, name):
@@ -19,6 +19,7 @@ class Amenity(BaseModel):
 		"""Validate the name of the amenity."""
 		if not isinstance(value, str):
 			raise TypeError("Name must be a string")
+		value = value.strip()
 		if not value:
 			raise ValueError("Name cannot be empty")
 		if len(value) > 100:

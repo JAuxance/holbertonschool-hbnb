@@ -6,12 +6,18 @@ from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.places import api as places_ns
 from app.api.v1.reviews import api as reviews_ns
 from app.api.v1.auth import api as auth_ns
-from app.services import facade
 
-def create_app(config_class="config.DevelopmentConfig"):
 
+def create_app(config_class="config.DevelopmentConfig", config_overrides=None):
     app = Flask(__name__)
-    app.config.from_object(config_class)
+
+    if isinstance(config_class, dict):
+        app.config.from_mapping(config_class)
+    else:
+        app.config.from_object(config_class)
+
+    if config_overrides:
+        app.config.from_mapping(config_overrides)
 
     db.init_app(app)
 
