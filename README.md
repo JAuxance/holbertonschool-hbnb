@@ -1,84 +1,167 @@
-# Jourdan Auxance
+# HBnB - Holberton BnB
 
-<p align="center">
-  Software foundations student building toward a long-term goal in Artificial Intelligence.
-</p>
+A full-stack vacation rental application inspired by Airbnb, built as part of the Holberton School curriculum.
 
-<p align="center">
-  <a href="https://github.com/JAuxance/ai-journey">
-    <img src="https://img.shields.io/badge/Main%20Goal-AI%20Journey-0F766E?style=for-the-badge&labelColor=111827" alt="Main goal AI Journey" />
-  </a>
-  <img src="https://img.shields.io/badge/Holberton-Foundation%20Year-E34F26?style=for-the-badge&labelColor=111827" alt="Holberton Foundation Year" />
-  <img src="https://img.shields.io/badge/Current%20Project-HBnB-2563EB?style=for-the-badge&labelColor=111827" alt="Current project HBnB" />
-  <img src="https://img.shields.io/badge/Current%20Focus-JavaScript%20%7C%20HTML%20%7C%20CSS-F59E0B?style=for-the-badge&labelColor=111827" alt="Current focus" />
-</p>
+## Project Structure
 
-## About me
+This project is divided into 3 parts, each representing a phase of development:
 
-I am currently 3 months away from the end of my first Foundation year at Holberton School.
-Right now, my day-to-day work is focused on the HBnB project and on strengthening my frontend skills in JavaScript, HTML, and CSS.
+```
+holbertonschool-hbnb/
+├── part1/          # Architecture & Design
+├── part2/          # Basic API Implementation
+├── part3/          # Full-stack with Database & Auth
+└── README.md
+```
 
-But my main direction is clear: I am building toward AI.
+### Part 1 - Architecture & Design
 
-That is why [AI Journey](https://github.com/JAuxance/ai-journey) is the repo that best represents where I am going. It is my long-term learning and project space, where I document my transition from software foundations to Artificial Intelligence through structure, practice, and real progress.
+- High-level architecture diagrams
+- Class diagrams (UML)
+- Sequence diagrams
+- Technical documentation
 
-## Main objective: AI Journey
+### Part 2 - Basic API Implementation
 
-[AI Journey](https://github.com/JAuxance/ai-journey) is the center of my long-term roadmap.
+- RESTful API with Flask-RESTX
+- In-memory persistence (Repository pattern)
+- CRUD operations for Users, Places, Reviews, Amenities
+- Model validation
+- Unit tests
 
-Through this repo, I am building strong foundations in:
+### Part 3 - Full-stack Application
 
-- Advanced Python
-- Mathematics for AI
-- Machine Learning
-- Deep Learning
-- Research-minded and reproducible projects
+- SQLAlchemy ORM integration (SQLite/MySQL)
+- JWT authentication with Flask-JWT-Extended
+- Password hashing with Bcrypt
+- Role-based access control (Admin/User)
+- Extended repository methods
 
-The goal is not only to train models, but to understand them, explain them clearly, and turn learning into solid, documented work.
+---
 
-<p align="center">
-  <a href="https://github.com/JAuxance/ai-journey">
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=JAuxance&repo=ai-journey&hide_border=true&title_color=0F172A&text_color=475569&icon_color=0F766E&bg_color=00000000" alt="AI Journey repository" />
-  </a>
-</p>
+## Features
 
-## What I am building now
+- **Users**: Registration, authentication, profile management
+- **Places**: List properties with location, price, and amenities
+- **Reviews**: Rate and review places (1-5 stars)
+- **Amenities**: Manage property features (WiFi, Pool, AC, etc.)
 
-- [AI Journey](https://github.com/JAuxance/ai-journey): my main long-term AI roadmap, notes, experiments, and project base.
-- HBnB: a full-stack project helping me strengthen architecture, APIs, persistence, and project structure.
-- Frontend practice: improving my integration skills with JavaScript, HTML, and CSS during the current HBnB phase.
+---
 
-Holberton gives me the engineering foundations. HBnB gives me hands-on project experience. AI Journey is where I turn that base into my main direction.
+## Tech Stack
 
-## Tech stack
+| Layer | Technology |
+|-------|------------|
+| Backend | Python, Flask |
+| API | Flask-RESTX (Swagger docs) |
+| Database | SQLAlchemy (SQLite / MySQL) |
+| Authentication | JWT (Flask-JWT-Extended) |
+| Security | Bcrypt password hashing |
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-1F2937?style=for-the-badge&logo=python&logoColor=FFD43B" alt="Python" />
-  <img src="https://img.shields.io/badge/Flask-1F2937?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
-  <img src="https://img.shields.io/badge/JavaScript-1F2937?style=for-the-badge&logo=javascript&logoColor=F7DF1E" alt="JavaScript" />
-  <img src="https://img.shields.io/badge/HTML5-1F2937?style=for-the-badge&logo=html5&logoColor=E34F26" alt="HTML5" />
-  <img src="https://img.shields.io/badge/CSS3-1F2937?style=for-the-badge&logo=css&logoColor=1572B6" alt="CSS3" />
-  <img src="https://img.shields.io/badge/Git-1F2937?style=for-the-badge&logo=git&logoColor=F05032" alt="Git" />
-</p>
+---
 
-## GitHub stats
+## Quick Start
 
-<p align="center">
-  <img height="170" src="https://github-readme-stats.vercel.app/api?username=JAuxance&show_icons=true&hide_border=true&rank_icon=github&title_color=0F172A&text_color=475569&icon_color=2563EB&bg_color=00000000" alt="GitHub stats" />
-  <img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=JAuxance&layout=compact&hide_border=true&title_color=0F172A&text_color=475569&bg_color=00000000" alt="Top languages" />
-</p>
+```bash
+# Clone the repository
+git clone https://github.com/<username>/holbertonschool-hbnb.git
+cd holbertonschool-hbnb
 
-<p align="center">
-  <img height="170" src="https://streak-stats.demolab.com?user=JAuxance&hide_border=true&background=FFFFFF00&ring=0F766E&fire=F59E0B&currStreakNum=0F172A&sideNums=0F172A&currStreakLabel=0F172A&sideLabels=475569&dates=94A3B8" alt="GitHub streak" />
-</p>
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
 
-## Featured work
+# Install dependencies
+cd part3/hbnb
+pip install -r requirements.txt
 
-- [AI Journey](https://github.com/JAuxance/ai-journey) - my main AI-focused repository and long-term roadmap.
-- [HBnB - Technical documentation](./holbertonschool-hbnb/part1/README.md)
-- [HBnB - Business logic and API](./holbertonschool-hbnb/part2/README.md)
-- [HBnB - Persistence and application structure](./holbertonschool-hbnb/part3/hbnb/README.md)
+# Run the application
+python run.py
+```
 
-## 2026 focus
+API available at: `http://localhost:5000/api/v1/`
 
-Keep building [AI Journey](https://github.com/JAuxance/ai-journey) into a serious AI portfolio, finish the Foundation year strong, and continue turning software fundamentals into stronger AI, backend, and project-building skills.
+---
+
+## API Documentation
+
+Interactive Swagger documentation is available at `/api/v1/` when the server is running.
+
+### Main Endpoints
+
+| Resource | Endpoint | Methods |
+|----------|----------|---------|
+| Auth | `/api/v1/auth/login` | POST |
+| Users | `/api/v1/users/` | GET, POST, PUT |
+| Places | `/api/v1/places/` | GET, POST, PUT |
+| Reviews | `/api/v1/reviews/` | GET, POST, PUT, DELETE |
+| Amenities | `/api/v1/amenities/` | GET, POST, PUT |
+
+---
+
+## Database Schema
+
+```
+users (1) ──────< places (N)
+  │                  │
+  │                  │
+  └──< reviews (N) >─┘
+
+places (N) >──< amenities (N)
+       (place_amenity)
+```
+
+| Table | Description |
+|-------|-------------|
+| `users` | Registered users (owners/reviewers) |
+| `places` | Properties listed on the platform |
+| `reviews` | User reviews for places |
+| `amenities` | Features available at places |
+| `place_amenity` | Many-to-many junction table |
+
+---
+
+## Default Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@hbnb.io | admin1234 |
+
+---
+
+## Testing
+
+```bash
+cd part3/hbnb
+
+# Run unit tests
+python -m pytest
+
+# Run API tests
+./test_secured.sh
+```
+
+---
+
+## Project Requirements
+
+- Python 3.8+
+- Flask
+- Flask-RESTX
+- Flask-SQLAlchemy
+- Flask-JWT-Extended
+- Flask-Bcrypt
+
+---
+
+## Authors
+
+- **Leny Blee** - [GitHub](https://github.com/LenyBl)
+- **Auxance Jourdan** - [GitHub](https://github.com/JAuxance)
+
+---
+
+## License
+
+This project is for educational purposes as part of the Holberton School curriculum.
