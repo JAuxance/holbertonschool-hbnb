@@ -969,6 +969,14 @@ textarea {
     border-color: rgba(185, 92, 69, 0.42);
 }
 
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"],
+.field textarea[aria-invalid="true"],
+.map-card.is-invalid {
+    border-color: rgba(185, 92, 69, 0.58);
+    box-shadow: 0 0 0 2px rgba(185, 92, 69, 0.1);
+}
+
 .form-message {
     margin: 0;
     display: none;
@@ -1059,6 +1067,14 @@ textarea {
     gap: 10px;
 }
 
+.field-error {
+    min-height: 1.25rem;
+    margin: 0;
+    color: var(--accent-deep);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
 .phone-field-shell {
     display: grid;
     gap: 10px;
@@ -1115,17 +1131,45 @@ textarea {
     padding: 0;
 }
 
-.image-preview {
-    border-radius: 18px;
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.image-preview-card {
     overflow: hidden;
+    border-radius: 18px;
     border: 1px solid rgba(221, 221, 221, 0.92);
     background: rgba(255, 255, 255, 0.82);
 }
 
-.image-preview img {
+.image-preview-card img {
     width: 100%;
-    max-height: 260px;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
+}
+
+.image-preview-meta {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px 12px;
+    font-size: 0.92rem;
+}
+
+.image-preview-meta span {
+    color: var(--muted);
+    word-break: break-word;
+}
+
+.image-preview-remove {
+    justify-self: flex-start;
+    border: 0;
+    background: transparent;
+    color: var(--accent-deep);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
 }
 
 .address-search {
@@ -1204,6 +1248,37 @@ textarea {
     border: 1px solid rgba(221, 221, 221, 0.9);
     font-weight: 700;
     color: var(--text);
+}
+
+.place-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.place-gallery-thumb {
+    padding: 0;
+    border: 1px solid rgba(221, 221, 221, 0.92);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.place-gallery-thumb:hover,
+.place-gallery-thumb:focus-visible,
+.place-gallery-thumb.is-active {
+    transform: translateY(-1px);
+    border-color: rgba(185, 92, 69, 0.48);
+    box-shadow: 0 12px 24px rgba(36, 49, 44, 0.08);
+}
+
+.place-gallery-thumb img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
 }
 
 .account-layout,

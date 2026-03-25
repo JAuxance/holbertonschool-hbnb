@@ -158,6 +158,15 @@ const PHONE_COUNTRIES = [
 ];
 
 const DEFAULT_PHONE_COUNTRY = "FR";
+const DEFAULT_PHONE_RULE = {
+    localDigitsMin: 8,
+    localDigitsMax: 10,
+    stripLeadingZero: false,
+    example: "",
+};
+const MAX_PLACE_PHOTOS = 5;
+const MAX_PLACE_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_PLACE_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
 
 let currentUserPromise = null;
 
@@ -515,11 +524,15 @@ async function initAddPlacePage() {
     const authRequired = document.getElementById("place-auth-required");
     const titleInput = document.getElementById("title");
     const descriptionInput = document.getElementById("description");
+    const titleError = document.getElementById("title-error");
     const priceInput = document.getElementById("price");
+    const priceError = document.getElementById("price-error");
     const phoneInput = document.getElementById("phone_number");
     const phoneCountrySelect = document.getElementById("phone_country");
     const phoneCountryCode = document.getElementById("phone_country_code");
     const phoneLocalNumberInput = document.getElementById("phone_local_number");
+    const phoneHelp = document.getElementById("phone-help");
+    const phoneError = document.getElementById("phone-error");
     const amenitiesPicker = document.getElementById("amenities-picker");
     const amenitiesHelp = document.getElementById("amenities-help");
     const amenityNameInput = document.getElementById("amenity-name-input");
@@ -532,26 +545,29 @@ async function initAddPlacePage() {
     const manualCoordinates = document.getElementById("manual-coordinates");
     const toggleManualCoordinates = document.getElementById("toggle-manual-coordinates");
     const selectedCoordinates = document.getElementById("selected-coordinates");
+    const locationError = document.getElementById("location-error");
     const mapStatus = document.getElementById("map-status");
-    const imageInput = document.getElementById("place-image");
-    const imagePreview = document.getElementById("place-image-preview");
-    const imagePreviewImg = document.getElementById("place-image-preview-img");
+    const imageInput = document.getElementById("place-images");
+    const photosError = document.getElementById("photos-error");
+    const imagePreview = document.getElementById("place-images-preview");
     const addressInput = document.getElementById("place-address");
     const searchAddressButton = document.getElementById("search-address-button");
     const addressSearchStatus = document.getElementById("address-search-status");
     const addressSearchResults = document.getElementById("address-search-results");
     const submitButton = document.getElementById("create-place-submit");
+    const mapCard = form?.querySelector(".map-card");
 
     if (
         !form || !message || !authRequired || !titleInput || !descriptionInput || !priceInput
-        || !phoneInput || !phoneCountrySelect
-        || !phoneCountryCode || !phoneLocalNumberInput || !amenitiesPicker || !amenitiesHelp
+        || !titleError || !priceError || !phoneInput || !phoneCountrySelect
+        || !phoneCountryCode || !phoneLocalNumberInput || !phoneHelp || !phoneError
+        || !amenitiesPicker || !amenitiesHelp
         || !amenityNameInput || !amenityCreateButton || !amenityCreateFeedback
         || !latitudeInput || !longitudeInput || !manualLatitudeInput || !manualLongitudeInput
-        || !manualCoordinates || !toggleManualCoordinates || !selectedCoordinates || !mapStatus
-        || !imageInput || !imagePreview || !imagePreviewImg
+        || !manualCoordinates || !toggleManualCoordinates || !selectedCoordinates || !locationError || !mapStatus
+        || !imageInput || !photosError || !imagePreview
         || !addressInput || !searchAddressButton || !addressSearchStatus || !addressSearchResults
-        || !submitButton
+        || !submitButton || !mapCard
     ) {
         return;
     }
@@ -567,11 +583,49 @@ async function initAddPlacePage() {
     }
 
     try {
+        let isSubmitting = false;
+        const fieldBindings = {
+            title: {
+                label: "Title",
+                errorElement: titleError,
+                inputs: [titleInput],
+                focusTarget: titleInput,
+            },
+            price: {
+                label: "Price",
+                errorElement: priceError,
+                inputs: [priceInput],
+                focusTarget: priceInput,
+            },
+            phone_number: {
+                label: "Phone number",
+                errorElement: phoneError,
+                inputs: [phoneCountrySelect, phoneLocalNumberInput],
+                focusTarget: phoneLocalNumberInput,
+            },
+            photos: {
+                label: "Photos",
+                errorElement: photosError,
+                inputs: [imageInput],
+                focusTarget: imageInput,
+            },
+            location: {
+                label: "Map location",
+                errorElement: locationError,
+                inputs: [manualLatitudeInput, manualLongitudeInput],
+                focusTarget: toggleManualCoordinates,
+                container: mapCard,
+            },
+        };
+
         const phoneController = initInternationalPhoneInput({
             hiddenInput: phoneInput,
             countrySelect: phoneCountrySelect,
             dialCodeBadge: phoneCountryCode,
             localNumberInput: phoneLocalNumberInput,
+            helperText: phoneHelp,
+            countries: getPhoneCountriesCatalog(),
+            defaultCountryIso: getDefaultPhoneCountryIso(),
         });
 
         const amenityPickerController = createAmenityPicker({
@@ -595,17 +649,9 @@ async function initAddPlacePage() {
             mapStatus,
         });
 
-        imageInput.addEventListener("change", () => {
-            const [file] = imageInput.files || [];
-            if (!file) {
-                imagePreview.classList.add("hidden");
-                imagePreviewImg.removeAttribute("src");
-                return;
-            }
-
-            const objectUrl = URL.createObjectURL(file);
-            imagePreviewImg.src = objectUrl;
-            imagePreview.classList.remove("hidden");
+        const photoUploader = createPhotoUploader({
+            input: imageInput,
+            previewContainer: imagePreview,
         });
 
         searchAddressButton.addEventListener("click", async () => {
@@ -660,69 +706,86 @@ async function initAddPlacePage() {
             }
         });
 
-        submitButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            form.requestSubmit();
+        priceInput.addEventListener("input", () => {
+            priceInput.value = sanitizeDigits(priceInput.value).slice(0, 7);
+            clearPlaceFieldError(fieldBindings, "price");
+        });
+
+        phoneLocalNumberInput.addEventListener("input", () => {
+            phoneController.sync();
+            clearPlaceFieldError(fieldBindings, "phone_number");
+        });
+
+        phoneCountrySelect.addEventListener("change", () => {
+            phoneController.sync();
+            clearPlaceFieldError(fieldBindings, "phone_number");
+        });
+
+        titleInput.addEventListener("input", () => {
+            clearPlaceFieldError(fieldBindings, "title");
+        });
+
+        imageInput.addEventListener("change", () => {
+            clearPlaceFieldError(fieldBindings, "photos");
+        });
+
+        manualLatitudeInput.addEventListener("input", () => {
+            clearPlaceFieldError(fieldBindings, "location");
+        });
+
+        manualLongitudeInput.addEventListener("input", () => {
+            clearPlaceFieldError(fieldBindings, "location");
         });
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            if (isSubmitting) {
+                return;
+            }
+
             clearFormMessage(message);
+            clearPlaceFieldErrors(fieldBindings);
+
+            const validation = validatePlaceForm({
+                titleInput,
+                priceInput,
+                latitudeInput,
+                longitudeInput,
+                phoneController,
+                phoneLocalNumberInput,
+                imageFiles: photoUploader.getFiles(),
+            });
+
+            if (!validation.isValid) {
+                if (validation.fields.location) {
+                    mapController.showManualMode();
+                }
+                applyPlaceFieldErrors(message, fieldBindings, validation.fields, { scroll: true });
+                return;
+            }
 
             try {
-                if (!form.reportValidity()) {
-                    setFormMessage(message, "Please complete the required fields before creating the place.", "error", { scroll: true });
-                    return;
-                }
-
-                const title = titleInput.value.trim();
-                const description = descriptionInput.value.trim();
-                const price = priceInput.valueAsNumber;
-                const selectedAmenities = amenityPickerController.getSelectedIds();
-                const normalizedPhoneNumber = phoneController.getValue();
-
-                const latitude = Number(latitudeInput.value);
-                const longitude = Number(longitudeInput.value);
-                if (!title) {
-                    setFormMessage(message, "Enter a title before creating the place.", "error", { scroll: true });
-                    titleInput.focus();
-                    return;
-                }
-                if (!Number.isFinite(price) || price < 0) {
-                    setFormMessage(message, "Enter a valid non-negative price before creating the place.", "error", { scroll: true });
-                    priceInput.focus();
-                    return;
-                }
-                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-                    setFormMessage(message, "Choose a point on the map or enter valid coordinates before creating the place.", "error", { scroll: true });
-                    mapController.showManualMode();
-                    return;
-                }
-                if (phoneLocalNumberInput.value.trim() && !normalizedPhoneNumber) {
-                    setFormMessage(message, "Enter a valid phone number using the country selector and local number field.", "error", { scroll: true });
-                    phoneLocalNumberInput.focus();
-                    return;
-                }
-
+                isSubmitting = true;
                 setFormMessage(message, "Creating your place...", "info", { scroll: true });
                 submitButton.disabled = true;
                 submitButton.textContent = "Creating...";
 
                 const formData = new FormData();
-                formData.append("title", title);
-                formData.append("description", description);
-                formData.append("price", String(price));
-                formData.append("latitude", String(latitude));
-                formData.append("longitude", String(longitude));
-                if (normalizedPhoneNumber) {
-                    formData.append("phone_number", normalizedPhoneNumber);
+                formData.append("title", validation.values.title);
+                formData.append("description", descriptionInput.value.trim());
+                formData.append("price", String(validation.values.price));
+                formData.append("latitude", String(validation.values.latitude));
+                formData.append("longitude", String(validation.values.longitude));
+                if (validation.values.phoneNumber) {
+                    formData.append("phone_number", validation.values.phoneNumber);
+                    formData.append("phone_country_iso", validation.values.phoneCountryIso);
                 }
-                selectedAmenities.forEach((amenityId) => formData.append("amenities", amenityId));
-
-                const [imageFile] = imageInput.files || [];
-                if (imageFile) {
-                    formData.append("image", imageFile);
-                }
+                amenityPickerController.getSelectedIds().forEach((amenityId) => {
+                    formData.append("amenities", amenityId);
+                });
+                validation.values.photos.forEach((file) => {
+                    formData.append("images", file, file.name);
+                });
 
                 const data = await fetchJson("/api/v1/places/", {
                     method: "POST",
@@ -738,8 +801,16 @@ async function initAddPlacePage() {
                 }, 700);
             } catch (error) {
                 console.error("Create Place submit failed:", error);
-                setFormMessage(message, error.message || "Unable to create this place right now.", "error", { scroll: true });
+                if (error.fields && Object.keys(error.fields).length) {
+                    applyPlaceFieldErrors(message, fieldBindings, error.fields, {
+                        scroll: true,
+                        fallbackMessage: error.message || "Validation failed.",
+                    });
+                } else {
+                    setFormMessage(message, error.message || "Unable to create this place right now.", "error", { scroll: true });
+                }
             } finally {
+                isSubmitting = false;
                 submitButton.disabled = false;
                 submitButton.textContent = "Create Place";
             }
@@ -780,6 +851,19 @@ function setFormMessage(element, text, tone = "info", { scroll = false } = {}) {
 
 function clearFormMessage(element) {
     setFormMessage(element, "");
+}
+
+function sanitizeDigits(value) {
+    return String(value || "").replace(/\D/g, "");
+}
+
+function formatPhoneLocalDisplay(digits) {
+    const cleanDigits = sanitizeDigits(digits);
+    if (!cleanDigits) {
+        return "";
+    }
+
+    return cleanDigits.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
 }
 
 async function initSignupPage() {
@@ -1004,28 +1088,164 @@ async function initSettingsPage() {
     });
 }
 
-function initInternationalPhoneInput({ hiddenInput, countrySelect, dialCodeBadge, localNumberInput }) {
-    const sortedCountries = [...PHONE_COUNTRIES].sort((left, right) => left.name.localeCompare(right.name));
+function getEmbeddedJson(id, fallback = null) {
+    const element = document.getElementById(id);
+    if (!element) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(element.textContent);
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function getPhoneCountriesCatalog() {
+    const rawCatalog = getEmbeddedJson("phone-country-catalog", PHONE_COUNTRIES);
+    if (!Array.isArray(rawCatalog)) {
+        return [];
+    }
+
+    return rawCatalog.map((country) => ({
+        ...DEFAULT_PHONE_RULE,
+        ...country,
+    }));
+}
+
+function getDefaultPhoneCountryIso() {
+    return getEmbeddedJson("default-phone-country", DEFAULT_PHONE_COUNTRY) || DEFAULT_PHONE_COUNTRY;
+}
+
+function getPhoneCountryByIso(countries, iso) {
+    return countries.find((country) => country.iso === iso) || null;
+}
+
+function buildPhoneHelperText(country) {
+    if (!country) {
+        return "Choose the country first. We store one international number starting with the correct + code.";
+    }
+
+    const digitRule = country.localDigitsMin === country.localDigitsMax
+        ? `${country.localDigitsMin} local digits`
+        : `${country.localDigitsMin} to ${country.localDigitsMax} local digits`;
+    const example = country.example ? ` Example: ${country.example}.` : "";
+    const leadingZeroRule = country.stripLeadingZero
+        ? "You can type the local leading 0, it will be removed automatically in the saved international number."
+        : "The saved international number keeps the selected country code.";
+
+    return `${country.name} numbers should contain ${digitRule} after ${country.dialCode}.${example} ${leadingZeroRule}`.trim();
+}
+
+function validateLocalPhoneNumber(country, rawValue) {
+    const inputDigits = sanitizeDigits(rawValue);
+    const maxInputDigits = country.localDigitsMax + (country.stripLeadingZero ? 1 : 0);
+    const trimmedDigits = country?.stripLeadingZero
+        ? inputDigits.replace(/^0+/, "")
+        : inputDigits;
+    const localDigits = trimmedDigits.slice(0, country.localDigitsMax);
+    const normalized = localDigits ? `${country.dialCode}${localDigits}` : "";
+
+    if (!inputDigits) {
+        return {
+            valid: true,
+            normalized: "",
+            displayValue: "",
+            localDigits,
+            message: "",
+        };
+    }
+
+    if (country.stripLeadingZero && !inputDigits.startsWith("0") && inputDigits.length === country.localDigitsMax) {
+        return {
+            valid: true,
+            normalized,
+            displayValue: formatPhoneLocalDisplay(inputDigits.slice(0, country.localDigitsMax)),
+            localDigits,
+            message: "",
+        };
+    }
+
+    if (inputDigits.length > maxInputDigits) {
+        return {
+            valid: false,
+            normalized: "",
+            displayValue: formatPhoneLocalDisplay(inputDigits.slice(0, maxInputDigits)),
+            localDigits,
+            message: `Phone number for ${country.name} is too long.`,
+        };
+    }
+
+    if (localDigits.length < country.localDigitsMin || localDigits.length > country.localDigitsMax) {
+        const digitRule = country.localDigitsMin === country.localDigitsMax
+            ? `${country.localDigitsMin} local digits`
+            : `${country.localDigitsMin} to ${country.localDigitsMax} local digits`;
+        return {
+            valid: false,
+            normalized: "",
+            displayValue: formatPhoneLocalDisplay(inputDigits.slice(0, country.localDigitsMax + (country.stripLeadingZero ? 1 : 0))),
+            localDigits,
+            message: `Phone number for ${country.name} must contain ${digitRule}.`,
+        };
+    }
+
+    return {
+        valid: true,
+        normalized,
+        displayValue: formatPhoneLocalDisplay(inputDigits.slice(0, country.localDigitsMax + (country.stripLeadingZero ? 1 : 0))),
+        localDigits,
+        message: "",
+    };
+}
+
+function initInternationalPhoneInput({
+    hiddenInput,
+    countrySelect,
+    dialCodeBadge,
+    localNumberInput,
+    helperText,
+    countries,
+    defaultCountryIso,
+}) {
+    const sortedCountries = [...countries].sort((left, right) => left.name.localeCompare(right.name));
     countrySelect.innerHTML = "";
 
     sortedCountries.forEach((country) => {
         const option = document.createElement("option");
         option.value = country.iso;
         option.textContent = country.name;
-        if (country.iso === DEFAULT_PHONE_COUNTRY) {
+        if (country.iso === defaultCountryIso) {
             option.selected = true;
         }
         countrySelect.appendChild(option);
     });
 
-    const syncPhoneNumber = () => {
-        const country = sortedCountries.find((item) => item.iso === countrySelect.value)
-            || sortedCountries.find((item) => item.iso === DEFAULT_PHONE_COUNTRY)
-            || sortedCountries[0];
-        const localDigits = String(localNumberInput.value || "").replace(/\D/g, "").replace(/^0+/, "");
+    const getSelectedCountry = () => {
+        return getPhoneCountryByIso(sortedCountries, countrySelect.value)
+            || getPhoneCountryByIso(sortedCountries, defaultCountryIso)
+            || sortedCountries[0]
+            || {
+                iso: DEFAULT_PHONE_COUNTRY,
+                name: "Selected country",
+                dialCode: "+",
+                ...DEFAULT_PHONE_RULE,
+            };
+    };
 
-        dialCodeBadge.textContent = country?.dialCode || "+";
-        hiddenInput.value = localDigits ? `${country.dialCode}${localDigits}` : "";
+    const syncPhoneNumber = () => {
+        const country = getSelectedCountry();
+        const validation = validateLocalPhoneNumber(country, localNumberInput.value);
+        const inputMaxDigits = country.localDigitsMax + (country.stripLeadingZero ? 1 : 0);
+
+        dialCodeBadge.textContent = country.dialCode;
+        localNumberInput.value = validation.displayValue;
+        localNumberInput.maxLength = inputMaxDigits + Math.floor(inputMaxDigits / 2);
+        hiddenInput.value = validation.valid ? validation.normalized : "";
+        helperText.textContent = buildPhoneHelperText(country);
+        return {
+            ...validation,
+            country,
+        };
     };
 
     countrySelect.addEventListener("change", syncPhoneNumber);
@@ -1034,8 +1254,236 @@ function initInternationalPhoneInput({ hiddenInput, countrySelect, dialCodeBadge
 
     return {
         getValue() {
-            syncPhoneNumber();
-            return hiddenInput.value || null;
+            return syncPhoneNumber().normalized || null;
+        },
+        getValidation() {
+            return syncPhoneNumber();
+        },
+        getSelectedCountry() {
+            return getSelectedCountry();
+        },
+        sync: syncPhoneNumber,
+    };
+}
+
+function createPhotoUploader({ input, previewContainer }) {
+    let selectedFiles = [];
+    let previewUrls = [];
+
+    const revokePreviews = () => {
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls = [];
+    };
+
+    const syncInputFiles = () => {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach((file) => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+    };
+
+    const render = () => {
+        revokePreviews();
+        previewContainer.innerHTML = "";
+
+        if (!selectedFiles.length) {
+            previewContainer.classList.add("hidden");
+            return;
+        }
+
+        previewContainer.classList.remove("hidden");
+        selectedFiles.forEach((file, index) => {
+            const previewUrl = URL.createObjectURL(file);
+            previewUrls.push(previewUrl);
+
+            const article = document.createElement("article");
+            article.className = "image-preview-card";
+            article.innerHTML = `
+                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(file.name)} preview">
+                <div class="image-preview-meta">
+                    <strong>Photo ${index + 1}</strong>
+                    <span>${escapeHtml(file.name)}</span>
+                    <button type="button" class="image-preview-remove" data-photo-index="${index}">Remove</button>
+                </div>
+            `;
+            previewContainer.appendChild(article);
+        });
+
+        previewContainer.querySelectorAll("[data-photo-index]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.photoIndex);
+                selectedFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
+                syncInputFiles();
+                render();
+            });
+        });
+    };
+
+    input.addEventListener("change", () => {
+        const nextFiles = Array.from(input.files || []);
+        if (!nextFiles.length) {
+            syncInputFiles();
+            render();
+            return;
+        }
+        selectedFiles = [...selectedFiles, ...nextFiles];
+        syncInputFiles();
+        render();
+    });
+
+    return {
+        getFiles() {
+            return [...selectedFiles];
+        },
+    };
+}
+
+function validateSelectedPlacePhotos(files) {
+    if (!files.length) {
+        return "";
+    }
+    if (files.length > MAX_PLACE_PHOTOS) {
+        return `Add up to ${MAX_PLACE_PHOTOS} photos per place.`;
+    }
+
+    for (const file of files) {
+        const extension = String(file.name || "").split(".").pop()?.toLowerCase() || "";
+        if (!ALLOWED_PLACE_IMAGE_EXTENSIONS.has(extension)) {
+            return "Photos must use JPG, JPEG, PNG, or WEBP.";
+        }
+        if (Number(file.size || 0) > MAX_PLACE_IMAGE_SIZE) {
+            return "Each photo must be 5 MB or smaller.";
+        }
+    }
+
+    return "";
+}
+
+function normalizePlaceFieldKey(fieldName) {
+    if (fieldName === "latitude" || fieldName === "longitude") {
+        return "location";
+    }
+    if (fieldName === "phone_country_iso") {
+        return "phone_number";
+    }
+    return fieldName;
+}
+
+function clearPlaceFieldError(fieldBindings, fieldName) {
+    const binding = fieldBindings[normalizePlaceFieldKey(fieldName)];
+    if (!binding) {
+        return;
+    }
+    if (binding.errorElement) {
+        binding.errorElement.textContent = "";
+    }
+    binding.inputs?.forEach((input) => {
+        input?.setAttribute("aria-invalid", "false");
+    });
+    binding.container?.classList.remove("is-invalid");
+}
+
+function clearPlaceFieldErrors(fieldBindings) {
+    Object.keys(fieldBindings).forEach((fieldName) => {
+        clearPlaceFieldError(fieldBindings, fieldName);
+    });
+}
+
+function applyPlaceFieldErrors(summaryElement, fieldBindings, rawFields, { scroll = false, fallbackMessage = null } = {}) {
+    clearPlaceFieldErrors(fieldBindings);
+
+    const labels = [];
+    let firstFocusTarget = null;
+    const normalizedEntries = Object.entries(rawFields || {}).map(([fieldName, errorMessage]) => [
+        normalizePlaceFieldKey(fieldName),
+        errorMessage,
+    ]);
+
+    normalizedEntries.forEach(([fieldName, errorMessage]) => {
+        const binding = fieldBindings[fieldName];
+        if (!binding || !errorMessage) {
+            return;
+        }
+        binding.errorElement.textContent = errorMessage;
+        binding.inputs?.forEach((input) => {
+            input?.setAttribute("aria-invalid", "true");
+        });
+        binding.container?.classList.add("is-invalid");
+        labels.push(binding.label);
+        if (!firstFocusTarget) {
+            firstFocusTarget = binding.focusTarget || binding.inputs?.[0] || null;
+        }
+    });
+
+    const uniqueLabels = Array.from(new Set(labels));
+    if (uniqueLabels.length) {
+        setFormMessage(
+            summaryElement,
+            `Fix these fields before creating the place: ${uniqueLabels.join(", ")}.`,
+            "error",
+            { scroll },
+        );
+    } else if (fallbackMessage) {
+        setFormMessage(summaryElement, fallbackMessage, "error", { scroll });
+    }
+
+    firstFocusTarget?.focus?.();
+}
+
+function validatePlaceForm({
+    titleInput,
+    priceInput,
+    latitudeInput,
+    longitudeInput,
+    phoneController,
+    phoneLocalNumberInput,
+    imageFiles,
+}) {
+    const fields = {};
+    const title = titleInput.value.trim();
+    const rawPriceValue = String(priceInput.value || "").trim();
+    const rawPriceDigits = sanitizeDigits(rawPriceValue);
+    const latitude = Number(latitudeInput.value);
+    const longitude = Number(longitudeInput.value);
+    const phoneValidation = phoneController.getValidation();
+    const photosError = validateSelectedPlacePhotos(imageFiles);
+
+    if (!title) {
+        fields.title = "Title is required.";
+    } else if (title.length > 100) {
+        fields.title = "Title must stay within 100 characters.";
+    }
+
+    if (!rawPriceValue) {
+        fields.price = "Price is required.";
+    } else if (rawPriceValue !== rawPriceDigits) {
+        fields.price = "Price must use digits only, up to 7 numbers.";
+    } else if (!rawPriceDigits || rawPriceDigits.length > 7) {
+        fields.price = "Price must use digits only, up to 7 numbers.";
+    }
+
+    if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+        fields.location = "Choose a point on the map or enter valid coordinates before creating the place.";
+    }
+
+    if (phoneLocalNumberInput.value.trim() && !phoneValidation.valid) {
+        fields.phone_number = phoneValidation.message || "Enter a valid phone number for the selected country.";
+    }
+
+    if (photosError) {
+        fields.photos = photosError;
+    }
+
+    return {
+        isValid: !Object.keys(fields).length,
+        fields,
+        values: {
+            title,
+            price: Number(rawPriceDigits),
+            latitude,
+            longitude,
+            phoneNumber: phoneValidation.valid ? (phoneValidation.normalized || null) : null,
+            phoneCountryIso: phoneValidation.valid && phoneValidation.normalized ? phoneValidation.country.iso : null,
+            photos: imageFiles,
         },
     };
 }
@@ -1435,10 +1883,11 @@ function renderPlace(place) {
     const tag = document.getElementById("place-tag");
     const amenities = document.getElementById("place-amenities");
     const image = document.getElementById("place-image");
+    const gallery = document.getElementById("place-gallery");
 
     if (
         !title || !price || !host || !hostAvatar || !location || !phoneCard || !phoneLink
-        || !description || !tag || !amenities || !image
+        || !description || !tag || !amenities || !image || !gallery
     ) {
         return;
     }
@@ -1451,9 +1900,7 @@ function renderPlace(place) {
     location.textContent = place.location || "France";
     description.textContent = place.description;
     tag.textContent = place.tag || "Thoughtful stay";
-    image.src = place.image;
-    image.alt = `${place.title} interior`;
-    image.style.objectPosition = place.imagePosition || "50% 50%";
+    renderPlaceGallery(image, gallery, place);
 
     if (place.phoneNumber) {
         phoneCard.classList.remove("hidden");
@@ -1471,6 +1918,50 @@ function renderPlace(place) {
         chip.textContent = item;
         amenities.appendChild(chip);
     });
+}
+
+function renderPlaceGallery(imageElement, galleryElement, place) {
+    const photos = Array.isArray(place.photos) && place.photos.length
+        ? place.photos
+        : [{
+            image_url: place.image,
+            position: 0,
+            imagePosition: place.imagePosition || "50% 50%",
+        }];
+
+    const setActivePhoto = (photo) => {
+        imageElement.src = photo.image_url;
+        imageElement.alt = `${place.title} interior`;
+        imageElement.style.objectPosition = photo.imagePosition || place.imagePosition || "50% 50%";
+        galleryElement.querySelectorAll("[data-photo-position]").forEach((button) => {
+            button.classList.toggle("is-active", Number(button.dataset.photoPosition) === Number(photo.position || 0));
+        });
+    };
+
+    setActivePhoto(photos[0]);
+    galleryElement.innerHTML = "";
+
+    if (photos.length <= 1) {
+        galleryElement.classList.add("hidden");
+        return;
+    }
+
+    galleryElement.classList.remove("hidden");
+    photos.forEach((photo, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "place-gallery-thumb";
+        button.dataset.photoPosition = String(photo.position ?? index);
+        button.innerHTML = `
+            <img src="${escapeHtml(photo.image_url)}" alt="${escapeHtml(place.title)} thumbnail ${index + 1}">
+        `;
+        button.addEventListener("click", () => {
+            setActivePhoto(photo);
+        });
+        galleryElement.appendChild(button);
+    });
+
+    setActivePhoto(photos[0]);
 }
 
 async function renderReviews(placeId) {
@@ -1617,6 +2108,7 @@ async function loadReviews(placeId) {
 
 function normalizePlace(place, index = 0) {
     const media = resolvePlaceMedia(place, index);
+    const photos = normalizePlacePhotos(place, media);
     const amenities = Array.isArray(place.amenities)
         ? place.amenities.map((item) => typeof item === "string" ? item : item.name).filter(Boolean)
         : media.amenities || [];
@@ -1642,13 +2134,46 @@ function normalizePlace(place, index = 0) {
         location: place.location || formatLocation(place, media.location),
         host: owner,
         hostName: getUserLabel(owner) || media.hostName || "HBnB Host",
-        image: place.image_url || place.image || media.image,
+        image: photos[0]?.image_url || place.image_url || place.image || media.image,
+        photos,
         imagePosition: place.imagePosition || media.imagePosition || "50% 50%",
         phoneNumber: place.phone_number || place.phoneNumber || null,
+        phoneCountryIso: place.phone_country_iso || place.phoneCountryIso || null,
         customAmenities,
         tag: place.tag || media.tag || mergedAmenities[0] || "Curated stay",
         amenities: mergedAmenities,
     };
+}
+
+function normalizePlacePhotos(place, media) {
+    const imagePosition = place.imagePosition || media.imagePosition || "50% 50%";
+    const apiPhotos = Array.isArray(place.photos)
+        ? place.photos
+            .map((photo, index) => ({
+                id: photo.id || `${place.id || media.id || "place"}-photo-${index}`,
+                image_url: photo.image_url,
+                position: Number(photo.position ?? index),
+                imagePosition,
+            }))
+            .filter((photo) => Boolean(photo.image_url))
+            .sort((left, right) => left.position - right.position)
+        : [];
+
+    if (apiPhotos.length) {
+        return apiPhotos;
+    }
+
+    const fallbackImage = place.image_url || place.image || media.image;
+    if (!fallbackImage) {
+        return [];
+    }
+
+    return [{
+        id: `${place.id || media.id || "place"}-photo-0`,
+        image_url: fallbackImage,
+        position: 0,
+        imagePosition,
+    }];
 }
 
 function resolvePlaceMedia(place, index = 0) {
@@ -1802,6 +2327,7 @@ async function fetchJson(url, options = {}) {
         const message = payload.error || payload.message || "Request failed.";
         const error = new Error(message);
         error.status = response.status;
+        error.fields = payload.fields || {};
         throw error;
     }
 

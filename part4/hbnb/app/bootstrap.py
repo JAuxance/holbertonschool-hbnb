@@ -15,6 +15,7 @@ def ensure_place_columns():
     additions = {
         "image_url": "ALTER TABLE places ADD COLUMN image_url VARCHAR(255)",
         "phone_number": "ALTER TABLE places ADD COLUMN phone_number VARCHAR(40)",
+        "phone_country_iso": "ALTER TABLE places ADD COLUMN phone_country_iso VARCHAR(2)",
         "custom_amenities_raw": "ALTER TABLE places ADD COLUMN custom_amenities_raw TEXT",
     }
 
@@ -86,6 +87,32 @@ def migrate_place_custom_amenities():
             changed = True
 
         if changed:
+            migrated_places += 1
+
+    if migrated_places:
+        db.session.commit()
+
+    return migrated_places
+
+
+def migrate_place_images_to_gallery():
+    """Ensure legacy places with a single image_url also have a gallery entry."""
+    from app.models.place import Place
+    from app.models.place_photo import PlacePhoto
+
+    places = Place.query.all()
+    migrated_places = 0
+
+    for place in places:
+        ordered_photos = sorted(place.photos, key=lambda photo: photo.position)
+
+        if ordered_photos and not place.image_url:
+            place.image_url = ordered_photos[0].image_url
+            migrated_places += 1
+            continue
+
+        if place.image_url and not ordered_photos:
+            place.photos.append(PlacePhoto(image_url=place.image_url, position=0))
             migrated_places += 1
 
     if migrated_places:

@@ -142,6 +142,7 @@ class APITestCase(unittest.TestCase):
         latitude=48.8566,
         longitude=2.3522,
         phone_number=None,
+        phone_country_iso=None,
         amenities=None,
     ):
         response = self.client.post(
@@ -153,6 +154,7 @@ class APITestCase(unittest.TestCase):
                 "latitude": latitude,
                 "longitude": longitude,
                 "phone_number": phone_number,
+                "phone_country_iso": phone_country_iso,
                 "amenities": amenities or [],
             },
             headers=self.auth_headers(token),

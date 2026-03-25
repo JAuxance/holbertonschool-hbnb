@@ -10,7 +10,9 @@ class Config:
     DEBUG = False
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    PLACE_IMAGE_MAX_SIZE = 5 * 1024 * 1024
+    PLACE_IMAGE_MAX_COUNT = 5
+    MAX_CONTENT_LENGTH = (PLACE_IMAGE_MAX_SIZE * PLACE_IMAGE_MAX_COUNT) + (1024 * 1024)
     PLACE_IMAGE_UPLOAD_SUBDIR = os.path.join('static', 'uploads', 'places')
     PLACE_IMAGE_URL_PREFIX = '/static/uploads/places'
     ALLOWED_PLACE_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}

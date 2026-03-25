@@ -1,7 +1,9 @@
 import io
 import json
 
-from app.bootstrap import migrate_place_custom_amenities
+from werkzeug.datastructures import MultiDict
+
+from app.bootstrap import migrate_place_custom_amenities, migrate_place_images_to_gallery
 from app.extensions import db
 from app.models.place import Place
 from tests_utils import APITestCase
@@ -67,12 +69,26 @@ class TestPlaceEndpoints(APITestCase):
         response = self.create_place(
             token,
             phone_number="+33612345678",
+            phone_country_iso="FR",
         )
 
         self.assertEqual(response.status_code, 201)
         data = response.get_json()
         self.assertEqual(data["phone_number"], "+33612345678")
+        self.assertEqual(data["phone_country_iso"], "FR")
         self.assertEqual(data["custom_amenities"], [])
+
+    def test_create_place_rejects_invalid_phone_number_for_country(self):
+        _, token, _, _ = self.create_and_login_user()
+
+        response = self.create_place(
+            token,
+            phone_number="+330612345678",
+            phone_country_iso="FR",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("phone_number", response.get_json()["fields"])
 
     def test_create_place_rejects_non_normalized_phone_number(self):
         _, token, _, _ = self.create_and_login_user()
@@ -83,7 +99,18 @@ class TestPlaceEndpoints(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("Phone number", response.get_json()["error"])
+        self.assertIn("phone_number", response.get_json()["fields"])
+
+    def test_create_place_rejects_too_large_price(self):
+        _, token, _, _ = self.create_and_login_user()
+
+        response = self.create_place(
+            token,
+            price=10000000,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Price", response.get_json()["error"])
 
     def test_create_place_with_uploaded_image(self):
         _, token, _, _ = self.create_and_login_user()
@@ -92,16 +119,17 @@ class TestPlaceEndpoints(APITestCase):
 
         response = self.client.post(
             "/api/v1/places/",
-            data={
-                "title": "Image Place",
-                "description": "With upload",
-                "price": "120",
-                "latitude": "48.8566",
-                "longitude": "2.3522",
-                "phone_number": "+33140000000",
-                "amenities": [amenity_id],
-                "image": (io.BytesIO(b"fake-image-data"), "place.jpg"),
-            },
+            data=MultiDict([
+                ("title", "Image Place"),
+                ("description", "With upload"),
+                ("price", "120"),
+                ("latitude", "48.8566"),
+                ("longitude", "2.3522"),
+                ("phone_number", "+33140000000"),
+                ("phone_country_iso", "FR"),
+                ("amenities", amenity_id),
+                ("images", (io.BytesIO(b"fake-image-data"), "place.jpg")),
+            ]),
             headers=self.auth_headers(token),
             content_type="multipart/form-data",
         )
@@ -111,27 +139,78 @@ class TestPlaceEndpoints(APITestCase):
         self.assertIn("image_url", data)
         self.assertTrue(data["image_url"].startswith("/static/uploads/places/"))
         self.assertEqual(data["phone_number"], "+33140000000")
+        self.assertEqual(data["phone_country_iso"], "FR")
         self.assertEqual([item["id"] for item in data["amenities"]], [amenity_id])
+        self.assertEqual(len(data["photos"]), 1)
+        self.assertEqual(data["photos"][0]["image_url"], data["image_url"])
+
+    def test_create_place_with_five_uploaded_images(self):
+        _, token, _, _ = self.create_and_login_user()
+
+        data = MultiDict([
+            ("title", "Gallery Place"),
+            ("description", "Five uploads"),
+            ("price", "180"),
+            ("latitude", "48.8566"),
+            ("longitude", "2.3522"),
+        ])
+        for index in range(5):
+            data.add("images", (io.BytesIO(f"fake-image-data-{index}".encode()), f"place-{index}.jpg"))
+
+        response = self.client.post(
+            "/api/v1/places/",
+            data=data,
+            headers=self.auth_headers(token),
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        payload = response.get_json()
+        self.assertEqual(len(payload["photos"]), 5)
+        self.assertEqual(payload["image_url"], payload["photos"][0]["image_url"])
+
+    def test_create_place_rejects_more_than_five_uploaded_images(self):
+        _, token, _, _ = self.create_and_login_user()
+
+        data = MultiDict([
+            ("title", "Gallery Place"),
+            ("description", "Many uploads"),
+            ("price", "180"),
+            ("latitude", "48.8566"),
+            ("longitude", "2.3522"),
+        ])
+        for index in range(6):
+            data.add("images", (io.BytesIO(f"fake-image-data-{index}".encode()), f"place-{index}.jpg"))
+
+        response = self.client.post(
+            "/api/v1/places/",
+            data=data,
+            headers=self.auth_headers(token),
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("photos", response.get_json()["fields"])
 
     def test_create_place_rejects_invalid_image_extension(self):
         _, token, _, _ = self.create_and_login_user()
 
         response = self.client.post(
             "/api/v1/places/",
-            data={
-                "title": "Bad Image Place",
-                "description": "Bad upload",
-                "price": "120",
-                "latitude": "48.8566",
-                "longitude": "2.3522",
-                "image": (io.BytesIO(b"fake-image-data"), "place.exe"),
-            },
+            data=MultiDict([
+                ("title", "Bad Image Place"),
+                ("description", "Bad upload"),
+                ("price", "120"),
+                ("latitude", "48.8566"),
+                ("longitude", "2.3522"),
+                ("images", (io.BytesIO(b"fake-image-data"), "place.exe")),
+            ]),
             headers=self.auth_headers(token),
             content_type="multipart/form-data",
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("error", response.get_json())
+        self.assertIn("photos", response.get_json()["fields"])
 
     def test_create_place_invalid_data(self):
         _, token, _, _ = self.create_and_login_user()
@@ -162,6 +241,7 @@ class TestPlaceEndpoints(APITestCase):
         created = self.create_place(
             token,
             phone_number="+33610101010",
+            phone_country_iso="FR",
         )
         place_id = created.get_json()["id"]
 
@@ -172,7 +252,9 @@ class TestPlaceEndpoints(APITestCase):
         self.assertEqual(data["id"], place_id)
         self.assertEqual(data["title"], "Nice Place")
         self.assertEqual(data["phone_number"], "+33610101010")
+        self.assertEqual(data["phone_country_iso"], "FR")
         self.assertEqual(data["custom_amenities"], [])
+        self.assertIn("photos", data)
 
     def test_legacy_custom_amenities_are_migrated_to_real_amenities(self):
         _, token, _, _ = self.create_and_login_user()
@@ -194,6 +276,26 @@ class TestPlaceEndpoints(APITestCase):
         self.assertEqual(data["custom_amenities"], [])
         amenity_names = sorted(item["name"] for item in data["amenities"])
         self.assertEqual(amenity_names, ["Hammock", "Outdoor shower"])
+
+    def test_legacy_image_url_is_migrated_to_gallery(self):
+        _, token, _, _ = self.create_and_login_user()
+        created = self.create_place(token)
+        place_id = created.get_json()["id"]
+
+        with self.app.app_context():
+            place = db.session.get(Place, place_id)
+            place.image_url = "/static/uploads/places/legacy-photo.jpg"
+            db.session.commit()
+
+            migrated_places = migrate_place_images_to_gallery()
+            db.session.refresh(place)
+
+        self.assertEqual(migrated_places, 1)
+        response = self.client.get(f"/api/v1/places/{place_id}")
+        data = response.get_json()
+        self.assertEqual(data["image_url"], "/static/uploads/places/legacy-photo.jpg")
+        self.assertEqual(len(data["photos"]), 1)
+        self.assertEqual(data["photos"][0]["image_url"], "/static/uploads/places/legacy-photo.jpg")
 
     def test_owner_can_update_place(self):
         _, token, _, _ = self.create_and_login_user()

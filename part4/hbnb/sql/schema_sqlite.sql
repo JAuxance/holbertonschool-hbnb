@@ -5,6 +5,7 @@
 -- Drop tables if they exist (in correct order due to foreign keys)
 DROP TABLE IF EXISTS place_amenity;
 DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS place_photos;
 DROP TABLE IF EXISTS places;
 DROP TABLE IF EXISTS amenities;
 DROP TABLE IF EXISTS users;
@@ -45,6 +46,7 @@ CREATE TABLE places (
     longitude FLOAT NOT NULL,
     image_url VARCHAR(255),
     phone_number VARCHAR(40),
+    phone_country_iso VARCHAR(2),
     custom_amenities_raw TEXT,
     user_id CHAR(36) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -54,6 +56,21 @@ CREATE TABLE places (
 
 -- Index for faster lookups by owner
 CREATE INDEX idx_places_user_id ON places(user_id);
+
+-- ============================================
+-- Place Photos Table
+-- ============================================
+CREATE TABLE place_photos (
+    id CHAR(36) PRIMARY KEY,
+    place_id CHAR(36) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_place_photos_place_id ON place_photos(place_id);
 
 -- ============================================
 -- Reviews Table

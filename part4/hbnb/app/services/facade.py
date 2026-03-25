@@ -109,7 +109,14 @@ class HBnBFacade:
             owner=owner,
             image_url=place_data.get('image_url'),
             phone_number=place_data.get('phone_number'),
+            phone_country_iso=place_data.get('phone_country_iso'),
         )
+
+        photo_urls = place_data.get('photo_urls') or (
+            [place_data.get('image_url')] if place_data.get('image_url') else []
+        )
+        if photo_urls:
+            place.set_photo_urls(photo_urls)
 
         for amenity in amenities:
             place.add_amenity(amenity)
@@ -140,6 +147,8 @@ class HBnBFacade:
                 update_data['owner'] = owner
             elif key == 'amenities':
                 pass  # handled separately below
+            elif key == 'photo_urls':
+                update_data['photo_urls'] = value
             elif key == 'custom_amenities':
                 continue
             else:
@@ -148,6 +157,10 @@ class HBnBFacade:
         # Handle amenities update - clear and re-add
         if 'amenities' in place_data:
             update_data['amenities'] = self._resolve_amenities(place_data['amenities'])
+
+        if 'photo_urls' in update_data:
+            photo_urls = update_data.pop('photo_urls') or []
+            place.set_photo_urls(photo_urls)
 
         self.place_repo.update(place_id, update_data)
         return self.get_place(place_id)

@@ -1,4 +1,5 @@
 from flask import Blueprint, redirect, render_template, url_for
+from app.utils.phone_countries import PHONE_COUNTRIES, DEFAULT_PHONE_COUNTRY
 
 
 web_bp = Blueprint("web", __name__)
@@ -50,6 +51,8 @@ def add_place():
         "add_place.html",
         page_name="add-place",
         page_title="Create Place",
+        phone_countries=PHONE_COUNTRIES,
+        default_phone_country=DEFAULT_PHONE_COUNTRY,
     )
 
 
