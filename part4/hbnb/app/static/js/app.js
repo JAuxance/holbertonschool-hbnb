@@ -441,13 +441,37 @@ async function initAddReviewPage() {
     const authRequired = document.getElementById("auth-required");
     const select = document.getElementById("place_id");
     const rating = document.getElementById("rating");
+    const text = document.getElementById("text");
+    const placeError = document.getElementById("review-place-error");
+    const ratingError = document.getElementById("review-rating-error");
+    const textError = document.getElementById("review-text-error");
 
-    if (!form || !message || !authRequired || !select || !rating) {
+    if (!form || !message || !authRequired || !select || !rating || !text || !placeError || !ratingError || !textError) {
         return;
     }
 
     select.required = true;
     rating.required = true;
+    const fieldBindings = {
+        place_id: {
+            label: "Place",
+            errorElement: placeError,
+            inputs: [select],
+            focusTarget: select,
+        },
+        rating: {
+            label: "Rating",
+            errorElement: ratingError,
+            inputs: [rating],
+            focusTarget: rating,
+        },
+        text: {
+            label: "Comment",
+            errorElement: textError,
+            inputs: [text],
+            focusTarget: text,
+        },
+    };
 
     const places = await loadApiPlaces();
     const requestedPlaceId = new URLSearchParams(window.location.search).get("place_id");
@@ -490,9 +514,98 @@ async function initAddReviewPage() {
         authRequired.textContent = "This selected place is only a front-end demo preview. Choose a real place from the list to publish a review.";
     }
 
+    const clearReviewErrors = () => {
+        Object.values(fieldBindings).forEach((binding) => {
+            binding.errorElement.textContent = "";
+            binding.inputs.forEach((input) => input.setAttribute("aria-invalid", "false"));
+        });
+    };
+
+    const applyReviewErrors = (fields, fallbackMessage = null) => {
+        clearReviewErrors();
+        const labels = [];
+        let firstFocusTarget = null;
+
+        Object.entries(fields || {}).forEach(([fieldName, errorMessage]) => {
+            const binding = fieldBindings[fieldName];
+            if (!binding || !errorMessage) {
+                return;
+            }
+            binding.errorElement.textContent = errorMessage;
+            binding.inputs.forEach((input) => input.setAttribute("aria-invalid", "true"));
+            labels.push(binding.label);
+            if (!firstFocusTarget) {
+                firstFocusTarget = binding.focusTarget;
+            }
+        });
+
+        if (labels.length) {
+            setFormMessage(
+                message,
+                `Fix these fields before publishing your review: ${Array.from(new Set(labels)).join(", ")}.`,
+                "error",
+                { scroll: true },
+            );
+        } else if (fallbackMessage) {
+            setFormMessage(message, fallbackMessage, "error", { scroll: true });
+        }
+
+        firstFocusTarget?.focus?.();
+    };
+
+    const validateReviewForm = () => {
+        const fields = {};
+        const trimmedText = text.value.trim();
+        const numericRating = Number(rating.value);
+
+        if (!select.value) {
+            fields.place_id = "Choose a real place before publishing your review.";
+        }
+        if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
+            fields.rating = "Select a rating between 1 and 5.";
+        }
+        if (!trimmedText) {
+            fields.text = "Comment is required.";
+        } else if (trimmedText.length > 500) {
+            fields.text = "Comment must stay within 500 characters.";
+        }
+
+        return {
+            isValid: !Object.keys(fields).length,
+            fields,
+            values: {
+                place_id: select.value,
+                rating: numericRating,
+                text: trimmedText,
+            },
+        };
+    };
+
+    select.addEventListener("change", () => {
+        clearReviewErrors();
+        clearFormMessage(message);
+    });
+    rating.addEventListener("change", () => {
+        clearReviewErrors();
+        clearFormMessage(message);
+    });
+    text.addEventListener("input", () => {
+        clearReviewErrors();
+        clearFormMessage(message);
+    });
+
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        message.textContent = "Publishing your review...";
+        clearReviewErrors();
+        clearFormMessage(message);
+
+        const validation = validateReviewForm();
+        if (!validation.isValid) {
+            applyReviewErrors(validation.fields);
+            return;
+        }
+
+        setFormMessage(message, "Publishing your review...", "info", { scroll: true });
 
         try {
             await fetchJson("/api/v1/reviews/", {
@@ -500,19 +613,15 @@ async function initAddReviewPage() {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    place_id: form.place_id.value,
-                    rating: Number(form.rating.value),
-                    text: form.text.value.trim(),
-                }),
+                body: JSON.stringify(validation.values),
             });
 
-            message.textContent = "Review published. Redirecting to the place page...";
+            setFormMessage(message, "Review published. Redirecting to the place page...", "success", { scroll: true });
             window.setTimeout(() => {
-                window.location.href = `/place.html?id=${encodeURIComponent(form.place_id.value)}`;
+                window.location.href = `/place.html?id=${encodeURIComponent(validation.values.place_id)}`;
             }, 700);
         } catch (error) {
-            message.textContent = error.message || "Unable to publish your review right now.";
+            applyReviewErrors(error.fields, error.message || "Unable to publish your review right now.");
         }
     });
 }
@@ -1884,10 +1993,13 @@ function renderPlace(place) {
     const amenities = document.getElementById("place-amenities");
     const image = document.getElementById("place-image");
     const gallery = document.getElementById("place-gallery");
+    const galleryRow = document.getElementById("place-gallery-row");
+    const galleryPrev = document.getElementById("place-gallery-prev");
+    const galleryNext = document.getElementById("place-gallery-next");
 
     if (
         !title || !price || !host || !hostAvatar || !location || !phoneCard || !phoneLink
-        || !description || !tag || !amenities || !image || !gallery
+        || !description || !tag || !amenities || !image || !gallery || !galleryRow || !galleryPrev || !galleryNext
     ) {
         return;
     }
@@ -1900,7 +2012,14 @@ function renderPlace(place) {
     location.textContent = place.location || "France";
     description.textContent = place.description;
     tag.textContent = place.tag || "Thoughtful stay";
-    renderPlaceGallery(image, gallery, place);
+    renderPlaceGallery({
+        imageElement: image,
+        galleryElement: gallery,
+        galleryRowElement: galleryRow,
+        previousButton: galleryPrev,
+        nextButton: galleryNext,
+        place,
+    });
 
     if (place.phoneNumber) {
         phoneCard.classList.remove("hidden");
@@ -1920,7 +2039,14 @@ function renderPlace(place) {
     });
 }
 
-function renderPlaceGallery(imageElement, galleryElement, place) {
+function renderPlaceGallery({
+    imageElement,
+    galleryElement,
+    galleryRowElement,
+    previousButton,
+    nextButton,
+    place,
+}) {
     const photos = Array.isArray(place.photos) && place.photos.length
         ? place.photos
         : [{
@@ -1928,40 +2054,70 @@ function renderPlaceGallery(imageElement, galleryElement, place) {
             position: 0,
             imagePosition: place.imagePosition || "50% 50%",
         }];
+    let activeIndex = 0;
 
-    const setActivePhoto = (photo) => {
+    const setActivePhoto = (nextIndex) => {
+        activeIndex = ((nextIndex % photos.length) + photos.length) % photos.length;
+        const photo = photos[activeIndex];
         imageElement.src = photo.image_url;
         imageElement.alt = `${place.title} interior`;
         imageElement.style.objectPosition = photo.imagePosition || place.imagePosition || "50% 50%";
         galleryElement.querySelectorAll("[data-photo-position]").forEach((button) => {
-            button.classList.toggle("is-active", Number(button.dataset.photoPosition) === Number(photo.position || 0));
+            button.classList.toggle("is-active", Number(button.dataset.photoIndex) === activeIndex);
+        });
+        const activeButton = galleryElement.querySelector(`[data-photo-index="${activeIndex}"]`);
+        activeButton?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
         });
     };
 
-    setActivePhoto(photos[0]);
     galleryElement.innerHTML = "";
 
     if (photos.length <= 1) {
         galleryElement.classList.add("hidden");
+        galleryRowElement.classList.add("hidden");
+        previousButton.classList.add("hidden");
+        nextButton.classList.add("hidden");
+        imageElement.src = photos[0].image_url;
+        imageElement.alt = `${place.title} interior`;
+        imageElement.style.objectPosition = photos[0].imagePosition || place.imagePosition || "50% 50%";
         return;
     }
 
     galleryElement.classList.remove("hidden");
+    galleryRowElement.classList.remove("hidden");
+    previousButton.classList.remove("hidden");
+    nextButton.classList.remove("hidden");
+
     photos.forEach((photo, index) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "place-gallery-thumb";
-        button.dataset.photoPosition = String(photo.position ?? index);
+        button.dataset.photoIndex = String(index);
         button.innerHTML = `
             <img src="${escapeHtml(photo.image_url)}" alt="${escapeHtml(place.title)} thumbnail ${index + 1}">
         `;
         button.addEventListener("click", () => {
-            setActivePhoto(photo);
+            setActivePhoto(index);
         });
         galleryElement.appendChild(button);
     });
 
-    setActivePhoto(photos[0]);
+    previousButton.onclick = () => {
+        setActivePhoto(activeIndex - 1);
+    };
+    nextButton.onclick = () => {
+        setActivePhoto(activeIndex + 1);
+    };
+    galleryElement.onwheel = (event) => {
+        if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+            galleryElement.scrollLeft += event.deltaY;
+            event.preventDefault();
+        }
+    };
+    setActivePhoto(0);
 }
 
 async function renderReviews(placeId) {

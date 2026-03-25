@@ -22,13 +22,38 @@ class ReviewList(Resource):
         """Register a new review"""
         current_user = get_jwt_identity()  # Get the current user's ID from the JWT token
         try:
-            review_data = api.payload
+            review_data = dict(api.payload or {})
+            fields_map = {}
+
+            place_id = str(review_data.get('place_id') or '').strip()
+            text = str(review_data.get('text') or '').strip()
+
+            try:
+                rating = int(review_data.get('rating'))
+            except (TypeError, ValueError):
+                rating = None
+
+            if not place_id:
+                fields_map['place_id'] = 'Choose a place before publishing your review.'
+            if rating is None or rating < 1 or rating > 5:
+                fields_map['rating'] = 'Select a rating between 1 and 5.'
+            if not text:
+                fields_map['text'] = 'Comment is required.'
+            elif len(text) > 500:
+                fields_map['text'] = 'Comment must stay within 500 characters.'
+
+            if fields_map:
+                return {'error': 'Validation failed', 'fields': fields_map}, 400
+
+            review_data['place_id'] = place_id
+            review_data['text'] = text
+            review_data['rating'] = rating
             # Set user_id from JWT token automatically
             review_data['user_id'] = current_user
 
             place = facade.get_place(review_data['place_id'])
             if not place:
-                return {'error': 'Place not found'}, 404
+                return {'error': 'Place not found', 'fields': {'place_id': 'Choose an existing place before publishing your review.'}}, 404
 
             if place.owner.id == current_user:
                 return {'error': 'You cannot review your own place'}, 400

@@ -18,12 +18,13 @@
     </div>
 
     <div class="add-review">
-        <form id="review-form" class="form" action="/api/v1/reviews/" method="post">
+        <form id="review-form" class="form" action="/api/v1/reviews/" method="post" novalidate>
             <div class="field">
                 <label for="place_id">Place</label>
                 <select id="place_id" name="place_id">
                     <option value="" label="Choose a place"></option>
                 </select>
+                <p id="review-place-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <div class="field">
@@ -35,6 +36,7 @@
                     <option value="2">2 - Fair</option>
                     <option value="1">1 - Poor</option>
                 </select>
+                <p id="review-rating-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <div class="field">
@@ -46,10 +48,11 @@
                     placeholder="Tell future guests what stood out during your stay."
                     required
                 ></textarea>
+                <p id="review-text-error" class="field-error" aria-live="polite"></p>
             </div>
 
-            <button type="submit" class="primary-button">Publish Review</button>
             <p id="review-message" class="form-message" aria-live="polite"></p>
+            <button type="submit" class="primary-button">Publish Review</button>
         </form>
     </div>
 </section>
