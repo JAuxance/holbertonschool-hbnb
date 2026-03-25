@@ -1,4 +1,4 @@
-from flask import Flask, redirect
+from flask import Flask
 from flask_restx import Api
 from app.extensions import db, bcrypt, jwt
 from app.api.v1.users import api as users_ns
@@ -6,6 +6,7 @@ from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.places import api as places_ns
 from app.api.v1.reviews import api as reviews_ns
 from app.api.v1.auth import api as auth_ns
+from app.web import web_bp
 
 
 def create_app(config_class="config.DevelopmentConfig", config_overrides=None):
@@ -23,10 +24,7 @@ def create_app(config_class="config.DevelopmentConfig", config_overrides=None):
 
     bcrypt.init_app(app)
     jwt.init_app(app)
-
-    @app.route('/')
-    def index():
-        return redirect('/api/v1/')
+    app.register_blueprint(web_bp)
 
     api = Api(app, version='1.0', title='HBnB API',
               description='HBnB Application API', doc='/api/v1/')

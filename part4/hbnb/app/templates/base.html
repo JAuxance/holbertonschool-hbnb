@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }} | HBnB</title>
+    <meta
+        name="description"
+        content="HBnB front-end experience for browsing places, viewing details, and sharing reviews."
+    >
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body data-page="{{ page_name }}">
+    <div class="site-backdrop"></div>
+    <div class="site-shell">
+        <header class="site-header">
+            <a class="brand" href="{{ url_for('web.index') }}" aria-label="HBnB Home">
+                <img
+                    src="{{ url_for('static', filename='img/logo.png') }}"
+                    alt="HBnB logo"
+                    class="logo"
+                >
+                <span class="brand-copy">
+                    <span class="eyebrow">HBnB</span>
+                    <span class="brand-name">Slow stays, bright spaces.</span>
+                </span>
+            </a>
+
+            <nav class="main-nav" aria-label="Primary navigation">
+                <a href="{{ url_for('web.index') }}">Places</a>
+                <a href="{{ url_for('web.login') }}">Login</a>
+                <a href="/api/v1/">API Docs</a>
+            </nav>
+
+            <a
+                href="{{ url_for('web.login') }}"
+                class="login-button"
+                id="auth-link"
+            >
+                Login
+            </a>
+        </header>
+
+        <main class="page-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <p>All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

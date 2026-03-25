@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow">Share your stay</p>
+            <h1>Add Review Form</h1>
+        </div>
+        <p class="section-text">
+            This form is available only for authenticated users. Log in first, then rate the place and
+            leave a short comment.
+        </p>
+    </div>
+
+    <div id="auth-required" class="info-banner hidden" aria-live="polite">
+        You need to log in before sending a review.
+    </div>
+
+    <div class="add-review">
+        <form id="review-form" class="form" action="/api/v1/reviews/" method="post">
+            <div class="field">
+                <label for="place_id">Place</label>
+                <select id="place_id" name="place_id">
+                    <option value="" label="Choose a place"></option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="rating">Rating</label>
+                <select id="rating" name="rating">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Very Good</option>
+                    <option value="3">3 - Good</option>
+                    <option value="2">2 - Fair</option>
+                    <option value="1">1 - Poor</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="text">Comment</label>
+                <textarea
+                    id="text"
+                    name="text"
+                    rows="5"
+                    placeholder="Tell future guests what stood out during your stay."
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" class="primary-button">Publish Review</button>
+            <p id="review-message" class="form-message" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}

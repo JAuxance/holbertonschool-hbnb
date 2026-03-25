@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <p class="eyebrow">Curated escapes</p>
+        <h1>Comfort-first stays for weekends that feel longer.</h1>
+        <p class="hero-text">
+            Browse calm, bright spaces with clear pricing, thoughtful amenities,
+            and a cleaner booking flow.
+        </p>
+    </div>
+    <aside class="hero-panel">
+        <p class="panel-label">What you can do here</p>
+        <ul class="panel-list">
+            <li>Discover places by vibe and price.</li>
+            <li>Open a detailed page before you commit.</li>
+            <li>Leave a review once you are authenticated.</li>
+        </ul>
+    </aside>
+</section>
+
+<section class="section-head">
+    <div>
+        <p class="eyebrow">Available now</p>
+        <h2>List of Places</h2>
+    </div>
+    <p class="section-text">
+        A minimal V1 that stays readable, soft, and responsive on desktop and mobile.
+    </p>
+</section>
+
+<section aria-labelledby="places-title">
+    <h3 id="places-title" class="sr-only">Places</h3>
+    <div id="places-grid" class="places-grid">
+        <article class="place-card">
+            <p class="card-kicker">Demo stay</p>
+            <h3>Canal Loft</h3>
+            <p class="price-tag">145 € / night</p>
+            <p class="card-description">Soft daylight, oak details, and a quiet street.</p>
+            <a class="details-button" href="{{ url_for('web.place') }}">View Details</a>
+        </article>
+        <article class="place-card">
+            <p class="card-kicker">Demo stay</p>
+            <h3>Maison du Sud</h3>
+            <p class="price-tag">190 € / night</p>
+            <p class="card-description">A warm, plant-filled home designed for long breakfasts.</p>
+            <a class="details-button" href="{{ url_for('web.place') }}">View Details</a>
+        </article>
+    </div>
+    <noscript>
+        <p class="info-banner">Enable JavaScript to load live places from the Flask API.</p>
+    </noscript>
+</section>
+{% endblock %}

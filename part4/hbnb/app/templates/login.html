@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow">Welcome back</p>
+            <h1>Login Form</h1>
+        </div>
+        <p class="section-text">
+            Sign in with your HBnB account to create reviews and access authenticated actions.
+        </p>
+    </div>
+
+    <div class="form-card">
+        <form id="login-form" class="form" action="/api/v1/auth/login" method="post">
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="primary-button">Sign In</button>
+            <p id="login-message" class="form-message" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}
