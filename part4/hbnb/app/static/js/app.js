@@ -660,6 +660,11 @@ async function initAddPlacePage() {
             }
         });
 
+        submitButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            form.requestSubmit();
+        });
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             clearFormMessage(message);

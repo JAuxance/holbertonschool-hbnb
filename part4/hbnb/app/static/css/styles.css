@@ -1006,13 +1006,19 @@ textarea {
 }
 
 .form-actions {
+    position: relative;
+    z-index: 20;
+    isolation: isolate;
     display: grid;
     gap: 14px;
     margin-top: 8px;
 }
 
 .form-submit-button {
+    position: relative;
+    z-index: 21;
     width: 100%;
+    pointer-events: auto;
 }
 
 .amenity-picker {
@@ -1151,6 +1157,10 @@ textarea {
 }
 
 .map-card {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    overflow: hidden;
     display: grid;
     gap: 16px;
     padding: 16px;
@@ -1167,6 +1177,12 @@ textarea {
     overflow: hidden;
     border: 1px solid rgba(221, 221, 221, 0.92);
     background: rgba(255, 255, 255, 0.82);
+}
+
+.place-map .leaflet-container,
+.place-map .leaflet-pane,
+.place-map .leaflet-control-container {
+    z-index: 0;
 }
 
 .map-toolbar {
