@@ -2114,6 +2114,21 @@ body[data-page="settings"] .settings-photo-actions {
     gap: 12px;
 }
 
+body[data-page="settings"] .settings-account-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--surface-border);
+    gap: 24px;
+}
+
+body[data-page="settings"] .settings-account-form .primary-button {
+    margin-top: 4px;
+}
+
+body[data-page="settings"] #settings-message {
+    margin-top: 12px;
+}
+
 @media (max-width: 640px) {
     body[data-page="login"] .narrow-layout,
     body[data-page="signup"] .narrow-layout,
@@ -2138,5 +2153,10 @@ body[data-page="settings"] .settings-photo-actions {
     body[data-page="settings"] .form-card,
     body[data-page="add-review"] .add-review {
         padding: 20px;
+    }
+
+    body[data-page="settings"] .settings-account-form {
+        margin-top: 16px;
+        padding-top: 16px;
     }
 }

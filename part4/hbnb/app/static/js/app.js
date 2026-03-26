@@ -75,7 +75,6 @@ const TRANSLATIONS = {
         "quick.indicator.manage": "Manage",
         "index.available.eyebrow": "Available now",
         "index.available.title": "List of Places",
-        "index.available.text": "The cards below are intentionally larger, calmer, and easier to scan on wide screens.",
         "index.places.sr_title": "Places",
         "index.noscript": "Enable JavaScript to load live places from the Flask API.",
         "place.view_details": "View Details",
@@ -264,6 +263,7 @@ const TRANSLATIONS = {
         "login.message.session_expired": "Your session expired. Please sign in again.",
         "login.message.signing_in": "Signing you in...",
         "login.message.success": "Login successful. Redirecting...",
+        "login.message.invalid_credentials": "Incorrect email or password.",
         "login.message.error": "Unable to log in with these credentials.",
         "signup.message.creating": "Creating your account...",
         "signup.message.success": "Account created. Redirecting to login...",
@@ -373,7 +373,6 @@ const TRANSLATIONS = {
         "quick.indicator.manage": "Gérer",
         "index.available.eyebrow": "Disponible maintenant",
         "index.available.title": "Liste des logements",
-        "index.available.text": "Les cartes ci-dessous sont plus larges, plus calmes et plus faciles à lire sur grand écran.",
         "index.places.sr_title": "Logements",
         "index.noscript": "Activez JavaScript pour charger les logements en direct depuis l’API Flask.",
         "place.view_details": "Voir les détails",
@@ -562,6 +561,7 @@ const TRANSLATIONS = {
         "login.message.session_expired": "Votre session a expiré. Connectez-vous à nouveau.",
         "login.message.signing_in": "Connexion en cours...",
         "login.message.success": "Connexion réussie. Redirection...",
+        "login.message.invalid_credentials": "Email ou mot de passe incorrect.",
         "login.message.error": "Impossible de se connecter avec ces identifiants.",
         "signup.message.creating": "Création de votre compte...",
         "signup.message.success": "Compte créé. Redirection vers la connexion...",
@@ -1292,14 +1292,14 @@ function initLoginPage() {
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("registered") === "1") {
-        message.textContent = t("login.message.registered");
+        setFormMessage(message, t("login.message.registered"), "success");
     } else if (params.get("session") === "expired") {
-        message.textContent = t("login.message.session_expired");
+        setFormMessage(message, t("login.message.session_expired"), "error");
     }
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        message.textContent = t("login.message.signing_in");
+        setFormMessage(message, t("login.message.signing_in"), "info");
 
         const email = form.email.value.trim();
         const password = form.password.value;
@@ -1311,14 +1311,17 @@ function initLoginPage() {
             });
 
             setToken(data.access_token);
-            message.textContent = t("login.message.success");
+            setFormMessage(message, t("login.message.success"), "success");
 
             const next = new URLSearchParams(window.location.search).get("next");
             window.setTimeout(() => {
                 window.location.href = next || "/index.html";
             }, 500);
         } catch (error) {
-            message.textContent = error.message || t("login.message.error");
+            const messageText = error.status === 401
+                ? t("login.message.invalid_credentials")
+                : (error.message || t("login.message.error"));
+            setFormMessage(message, messageText, "error");
         }
     });
 }
@@ -1955,7 +1958,7 @@ async function initSignupPage() {
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        message.textContent = t("signup.message.creating");
+        setFormMessage(message, t("signup.message.creating"), "info");
 
         try {
             await fetchJson("/api/v1/auth/signup", {
@@ -1968,7 +1971,7 @@ async function initSignupPage() {
                 }),
             });
 
-            message.textContent = t("signup.message.success");
+            setFormMessage(message, t("signup.message.success"), "success");
             const currentUrl = new URL(window.location.href);
             const next = currentUrl.searchParams.get("next");
             const loginUrl = new URL("/login.html", window.location.origin);
@@ -1981,7 +1984,7 @@ async function initSignupPage() {
                 window.location.href = loginUrl.toString();
             }, 700);
         } catch (error) {
-            message.textContent = error.message || t("signup.message.error");
+            setFormMessage(message, error.message || t("signup.message.error"), "error");
         }
     });
 }
