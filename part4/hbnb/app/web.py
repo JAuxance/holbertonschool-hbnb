@@ -31,6 +31,16 @@ def settings():
     return render_template("settings.html", page_name="settings", page_title="Account Settings")
 
 
+@web_bp.get("/privacy.html")
+def privacy():
+    return render_template("privacy.html", page_name="privacy", page_title="Privacy Notice")
+
+
+@web_bp.get("/data-rights.html")
+def data_rights():
+    return render_template("data_rights.html", page_name="data-rights", page_title="Data Rights")
+
+
 @web_bp.get("/place.html")
 def place():
     return render_template("place.html", page_name="place", page_title="Place Details")

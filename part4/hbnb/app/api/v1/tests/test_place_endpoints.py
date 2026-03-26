@@ -9,6 +9,12 @@ from app.models.place import Place
 from tests_utils import APITestCase
 
 
+VALID_JPEG_BYTES = (
+    b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00"
+    b"\x00\x01\x00\x01\x00\x00\xff\xd9"
+)
+
+
 class TestPlaceEndpoints(APITestCase):
     def test_create_place_requires_authentication(self):
         response = self.client.post(
@@ -128,7 +134,7 @@ class TestPlaceEndpoints(APITestCase):
                 ("phone_number", "+33140000000"),
                 ("phone_country_iso", "FR"),
                 ("amenities", amenity_id),
-                ("images", (io.BytesIO(b"fake-image-data"), "place.jpg")),
+                ("images", (io.BytesIO(VALID_JPEG_BYTES), "place.jpg")),
             ]),
             headers=self.auth_headers(token),
             content_type="multipart/form-data",
@@ -155,7 +161,10 @@ class TestPlaceEndpoints(APITestCase):
             ("longitude", "2.3522"),
         ])
         for index in range(5):
-            data.add("images", (io.BytesIO(f"fake-image-data-{index}".encode()), f"place-{index}.jpg"))
+            data.add(
+                "images",
+                (io.BytesIO(VALID_JPEG_BYTES + str(index).encode()), f"place-{index}.jpg"),
+            )
 
         response = self.client.post(
             "/api/v1/places/",
@@ -180,7 +189,10 @@ class TestPlaceEndpoints(APITestCase):
             ("longitude", "2.3522"),
         ])
         for index in range(6):
-            data.add("images", (io.BytesIO(f"fake-image-data-{index}".encode()), f"place-{index}.jpg"))
+            data.add(
+                "images",
+                (io.BytesIO(VALID_JPEG_BYTES + str(index).encode()), f"place-{index}.jpg"),
+            )
 
         response = self.client.post(
             "/api/v1/places/",
@@ -203,7 +215,27 @@ class TestPlaceEndpoints(APITestCase):
                 ("price", "120"),
                 ("latitude", "48.8566"),
                 ("longitude", "2.3522"),
-                ("images", (io.BytesIO(b"fake-image-data"), "place.exe")),
+                ("images", (io.BytesIO(VALID_JPEG_BYTES), "place.exe")),
+            ]),
+            headers=self.auth_headers(token),
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("photos", response.get_json()["fields"])
+
+    def test_create_place_rejects_invalid_image_content(self):
+        _, token, _, _ = self.create_and_login_user()
+
+        response = self.client.post(
+            "/api/v1/places/",
+            data=MultiDict([
+                ("title", "Bad Content Place"),
+                ("description", "Bad upload"),
+                ("price", "120"),
+                ("latitude", "48.8566"),
+                ("longitude", "2.3522"),
+                ("images", (io.BytesIO(b"not-an-image"), "place.jpg")),
             ]),
             headers=self.auth_headers(token),
             content_type="multipart/form-data",

@@ -3,10 +3,10 @@
 {% block content %}
 <section class="section-head">
     <div>
-        <p class="eyebrow">Account overview</p>
-        <h1>Your Profile</h1>
+        <p class="eyebrow" data-i18n="profile.eyebrow">Account overview</p>
+        <h1 data-i18n="profile.title">Your Profile</h1>
     </div>
-    <a class="utility-link" href="{{ url_for('web.settings') }}">Settings</a>
+    <a class="utility-link" href="{{ url_for('web.settings') }}" data-i18n="nav.settings">Settings</a>
 </section>
 
 <section class="account-layout">
@@ -17,33 +17,33 @@
             <div class="profile-summary-main">
                 <img id="profile-avatar" class="user-avatar user-avatar-xl" src="" alt="Profile avatar">
                 <div class="profile-summary-copy">
-                    <p class="eyebrow">Connected account</p>
-                    <h2 id="profile-name">Account</h2>
+                    <p class="eyebrow" data-i18n="profile.connected_account">Connected account</p>
+                    <h2 id="profile-name" data-i18n="profile.account">Account</h2>
                     <p id="profile-email" class="section-text">email@example.com</p>
                 </div>
             </div>
             <div class="profile-stats">
                 <div class="profile-stat">
                     <strong id="profile-place-count">0</strong>
-                    <span>places published</span>
+                    <span data-i18n="profile.places_published">places published</span>
                 </div>
                 <div class="profile-stat">
                     <strong id="profile-role">Member</strong>
-                    <span>account role</span>
+                    <span data-i18n="profile.account_role">account role</span>
                 </div>
             </div>
         </section>
 
         <section class="section-head compact">
             <div>
-                <p class="eyebrow">Published stays</p>
-                <h2>Your Places</h2>
+                <p class="eyebrow" data-i18n="profile.published_stays">Published stays</p>
+                <h2 data-i18n="profile.your_places">Your Places</h2>
             </div>
-            <a class="details-button" href="{{ url_for('web.add_place') }}">Create Place</a>
+            <a class="details-button" href="{{ url_for('web.add_place') }}" data-i18n="place.create_place">Create Place</a>
         </section>
 
         <section class="places-block" aria-labelledby="profile-places-title">
-            <h3 id="profile-places-title" class="sr-only">Your places</h3>
+            <h3 id="profile-places-title" class="sr-only" data-i18n="profile.your_places">Your places</h3>
             <p id="profile-places-message" class="form-message" aria-live="polite"></p>
             <div id="profile-places-grid" class="places-grid"></div>
             <div id="profile-empty-state" class="info-banner hidden" aria-live="polite"></div>

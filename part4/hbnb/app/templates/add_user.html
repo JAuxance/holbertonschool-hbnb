@@ -4,10 +4,10 @@
 <section class="narrow-layout">
     <div class="section-head compact">
         <div>
-            <p class="eyebrow">Admin tools</p>
-            <h1>Create User</h1>
+            <p class="eyebrow" data-i18n="add_user.eyebrow">Admin tools</p>
+            <h1 data-i18n="add_user.title">Create User</h1>
         </div>
-        <p class="section-text">
+        <p class="section-text" data-i18n="add_user.text">
             Add a new platform user from the website. This action uses the existing admin-only user API.
         </p>
     </div>
@@ -18,7 +18,7 @@
         <form id="user-form" class="form" action="/api/v1/users/" method="post">
             <div class="field-grid field-grid-2">
                 <div class="field">
-                    <label for="first_name">First Name</label>
+                    <label for="first_name" data-i18n="common.first_name">First Name</label>
                     <input
                         id="first_name"
                         name="first_name"
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="last_name">Last Name</label>
+                    <label for="last_name" data-i18n="common.last_name">Last Name</label>
                     <input
                         id="last_name"
                         name="last_name"
@@ -43,7 +43,7 @@
             </div>
 
             <div class="field">
-                <label for="email">Email</label>
+                <label for="email" data-i18n="common.email">Email</label>
                 <input
                     id="email"
                     name="email"
@@ -54,7 +54,7 @@
             </div>
 
             <div class="field">
-                <label for="password">Password</label>
+                <label for="password" data-i18n="common.password">Password</label>
                 <input
                     id="password"
                     name="password"
@@ -65,7 +65,7 @@
                 >
             </div>
 
-            <button type="submit" class="primary-button">Create User</button>
+            <button type="submit" class="primary-button" data-i18n="add_user.create">Create User</button>
             <p id="user-message" class="form-message" aria-live="polite"></p>
         </form>
     </div>

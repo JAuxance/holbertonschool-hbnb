@@ -3,26 +3,32 @@
 {% block content %}
 <section class="section-head">
     <div>
-        <p class="eyebrow">Stay overview</p>
-        <h1>Place Details</h1>
+        <p class="eyebrow" data-i18n="place.eyebrow">Stay overview</p>
+        <h1 data-i18n="place.title">Place Details</h1>
     </div>
     <div class="section-actions">
         <a id="review-action" class="details-button" href="{{ url_for('web.login') }}">
-            Login to Add Review
+            <span data-i18n="place.login_add_review">Login to Add Review</span>
         </a>
         <button id="delete-place-action" type="button" class="danger-button hidden">
-            Delete Place
+            <span data-i18n="place.delete_place">Delete Place</span>
         </button>
     </div>
 </section>
 <p id="place-action-message" class="form-message place-action-message" aria-live="polite"></p>
 
 <section id="place-details" class="place-details">
-    <h2 class="sr-only">Place information</h2>
+    <h2 class="sr-only" data-i18n="place.info_sr">Place information</h2>
     <article class="place-card feature-card place-showcase">
         <div class="place-showcase-media">
             <div class="place-media-frame">
-                <button id="place-gallery-prev" type="button" class="gallery-nav gallery-nav-prev hidden" aria-label="Previous photo">
+                <button
+                    id="place-gallery-prev"
+                    type="button"
+                    class="gallery-nav gallery-nav-prev hidden"
+                    aria-label="Previous photo"
+                    data-i18n-aria-label="place.prev_photo"
+                >
                     ‹
                 </button>
                 <img
@@ -30,12 +36,18 @@
                     src="{{ url_for('static', filename='img/places/canal-loft.jpg') }}"
                     alt="Canal Loft interior"
                 >
-                <button id="place-gallery-next" type="button" class="gallery-nav gallery-nav-next hidden" aria-label="Next photo">
+                <button
+                    id="place-gallery-next"
+                    type="button"
+                    class="gallery-nav gallery-nav-next hidden"
+                    aria-label="Next photo"
+                    data-i18n-aria-label="place.next_photo"
+                >
                     ›
                 </button>
             </div>
             <div class="place-gallery-row hidden" id="place-gallery-row">
-                <div id="place-gallery" class="place-gallery" aria-label="Place photo gallery"></div>
+                <div id="place-gallery" class="place-gallery" aria-label="Place photo gallery" data-i18n-aria-label="place.photo_gallery"></div>
             </div>
         </div>
         <div class="place-showcase-content">
@@ -49,28 +61,28 @@
                 <img
                     id="host-avatar"
                     class="user-avatar user-avatar-large"
-                    src="https://api.dicebear.com/9.x/open-peeps/svg?seed=clara-d"
+                    src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
                     alt="Host avatar"
                 >
                 <div class="host-copy">
-                    <h3>Host</h3>
+                    <h3 data-i18n="place.host">Host</h3>
                     <p id="place-host">Clara D.</p>
                 </div>
             </div>
 
             <div class="place-info-grid">
                 <div class="place-info">
-                    <h3>Location</h3>
+                    <h3 data-i18n="place.location">Location</h3>
                     <p id="place-location">Paris, France</p>
                 </div>
                 <div id="place-phone-card" class="place-info hidden">
-                    <h3>Host contact</h3>
+                    <h3 data-i18n="place.host_contact">Host contact</h3>
                     <p>
                         <a id="place-phone-link" class="place-phone-link" href="#">+33 6 12 34 56 78</a>
                     </p>
                 </div>
                 <div class="place-info">
-                    <h3>Amenities</h3>
+                    <h3 data-i18n="place.amenities">Amenities</h3>
                     <ul id="place-amenities" class="chip-list">
                         <li>WiFi</li>
                         <li>Kitchen</li>
@@ -78,7 +90,7 @@
                     </ul>
                 </div>
                 <div class="place-info place-info-wide">
-                    <h3>Description</h3>
+                    <h3 data-i18n="common.description">Description</h3>
                     <p id="place-description">
                         A bright loft with a calm palette, generous daylight, and enough room to slow down.
                     </p>
@@ -91,20 +103,20 @@
 <section class="reviews-block" aria-labelledby="reviews-title">
     <div class="section-head compact reviews-head">
         <div>
-            <p class="eyebrow">Guest feedback</p>
-            <h2>Reviews</h2>
+            <p class="eyebrow" data-i18n="reviews.eyebrow">Guest feedback</p>
+            <h2 data-i18n="reviews.title">Reviews</h2>
         </div>
-        <p class="section-text">Real comments are loaded from the API when available.</p>
+        <p class="section-text" data-i18n="reviews.text">Real comments are loaded from the API when available.</p>
     </div>
 
-    <h3 id="reviews-title" class="sr-only">Reviews</h3>
+    <h3 id="reviews-title" class="sr-only" data-i18n="reviews.title">Reviews</h3>
     <div id="reviews-list" class="reviews-list reviews-list-balanced">
         <div class="review-card">
             <div class="review-meta">
                 <div class="review-user">
                     <img
                         class="user-avatar review-avatar"
-                        src="https://api.dicebear.com/9.x/open-peeps/svg?seed=nina-r"
+                        src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
                         alt="Reviewer avatar"
                     >
                     <strong>Nina R.</strong>

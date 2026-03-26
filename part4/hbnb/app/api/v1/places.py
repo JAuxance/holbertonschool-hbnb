@@ -1,13 +1,16 @@
 import os
 import re
-import uuid
 
 from flask import current_app, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from flask_restx import Namespace, Resource, fields
-from werkzeug.utils import secure_filename
 
 from app.services import facade
+from app.utils.image_uploads import (
+    delete_uploaded_internal_file,
+    save_uploaded_image_file,
+    validate_uploaded_image_file,
+)
 from app.utils.phone_countries import (
     get_phone_country,
     normalize_phone_country_iso,
@@ -59,11 +62,6 @@ def validation_response(error):
     }, 400
 
 
-def allowed_image_file(filename):
-    extension = filename.rsplit(".", 1)[-1].lower()
-    return "." in filename and extension in current_app.config["ALLOWED_PLACE_IMAGE_EXTENSIONS"]
-
-
 def get_place_upload_dir():
     configured_dir = current_app.config.get("PLACE_IMAGE_UPLOAD_DIR")
     if configured_dir:
@@ -72,18 +70,6 @@ def get_place_upload_dir():
         current_app.root_path,
         current_app.config["PLACE_IMAGE_UPLOAD_SUBDIR"],
     )
-
-
-def get_file_size(image_file):
-    try:
-        stream = image_file.stream
-        current_position = stream.tell()
-        stream.seek(0, os.SEEK_END)
-        size = stream.tell()
-        stream.seek(current_position)
-        return size
-    except (AttributeError, OSError):
-        return 0
 
 
 def validate_uploaded_image_files(image_files):
@@ -98,13 +84,22 @@ def validate_uploaded_image_files(image_files):
     if len(cleaned_files) > max_count:
         fields_map["photos"] = f"Add up to {max_count} photos per place."
 
+    normalized_extensions = {
+        "jpg" if str(item).lower() == "jpeg" else str(item).lower()
+        for item in current_app.config["ALLOWED_PLACE_IMAGE_EXTENSIONS"]
+    }
     for image_file in cleaned_files:
-        filename = secure_filename(image_file.filename)
-        if not filename or not allowed_image_file(filename):
-            fields_map["photos"] = "Photos must use JPG, JPEG, PNG, or WEBP."
-            break
-        if get_file_size(image_file) > max_size:
-            fields_map["photos"] = "Each photo must be 5 MB or smaller."
+        try:
+            validate_uploaded_image_file(
+                image_file,
+                allowed_extensions=normalized_extensions,
+                max_size=max_size,
+                invalid_extension_message="Photos must use JPG, JPEG, PNG, or WEBP.",
+                invalid_content_message="Uploaded photo content is invalid.",
+                max_size_message="Each photo must be 5 MB or smaller.",
+            )
+        except ValueError as error:
+            fields_map["photos"] = str(error)
             break
 
     if fields_map:
@@ -116,33 +111,39 @@ def validate_uploaded_image_files(image_files):
 def save_uploaded_place_images(image_files):
     saved_urls = []
     upload_dir = get_place_upload_dir()
-    os.makedirs(upload_dir, exist_ok=True)
+    url_prefix = current_app.config["PLACE_IMAGE_URL_PREFIX"]
+    normalized_extensions = {
+        "jpg" if str(item).lower() == "jpeg" else str(item).lower()
+        for item in current_app.config["ALLOWED_PLACE_IMAGE_EXTENSIONS"]
+    }
 
     for image_file in image_files:
-        filename = secure_filename(image_file.filename)
-        extension = filename.rsplit(".", 1)[-1].lower()
-        stored_filename = f"{uuid.uuid4().hex}.{extension}"
-        image_file.save(os.path.join(upload_dir, stored_filename))
-        saved_urls.append(f"{current_app.config['PLACE_IMAGE_URL_PREFIX']}/{stored_filename}")
+        extension = validate_uploaded_image_file(
+            image_file,
+            allowed_extensions=normalized_extensions,
+            max_size=current_app.config["PLACE_IMAGE_MAX_SIZE"],
+            invalid_extension_message="Photos must use JPG, JPEG, PNG, or WEBP.",
+            invalid_content_message="Uploaded photo content is invalid.",
+            max_size_message="Each photo must be 5 MB or smaller.",
+        )
+        saved_urls.append(
+            save_uploaded_image_file(
+                image_file,
+                upload_dir=upload_dir,
+                url_prefix=url_prefix,
+                extension=extension,
+            )
+        )
 
     return saved_urls
 
 
 def delete_uploaded_place_file(image_url):
-    if not image_url:
-        return
-
-    prefix = current_app.config["PLACE_IMAGE_URL_PREFIX"]
-    if not image_url.startswith(prefix):
-        return
-
-    filename = os.path.basename(image_url)
-    if not filename:
-        return
-
-    file_path = os.path.join(get_place_upload_dir(), filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    delete_uploaded_internal_file(
+        image_url,
+        url_prefix=current_app.config["PLACE_IMAGE_URL_PREFIX"],
+        upload_dir=get_place_upload_dir(),
+    )
 
 
 def delete_uploaded_place_images(image_urls):

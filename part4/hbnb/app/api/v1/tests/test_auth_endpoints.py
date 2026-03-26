@@ -31,3 +31,15 @@ class TestAuthEndpoints(APITestCase):
         self.assertEqual(response.status_code, 201)
         data = response.get_json()
         self.assertEqual(data["title"], "Public Signup Place")
+
+    def test_security_headers_are_present_on_api_responses(self):
+        response = self.client.get("/api/v1/amenities/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get("X-Content-Type-Options"), "nosniff")
+        self.assertEqual(response.headers.get("X-Frame-Options"), "SAMEORIGIN")
+        self.assertEqual(
+            response.headers.get("Referrer-Policy"),
+            "strict-origin-when-cross-origin",
+        )
+        self.assertIn("geolocation=()", response.headers.get("Permissions-Policy", ""))

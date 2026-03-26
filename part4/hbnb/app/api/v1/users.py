@@ -1,6 +1,15 @@
+import os
+from datetime import datetime, timezone
+
+from flask import current_app, request
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from app.utils.image_uploads import (
+    delete_uploaded_internal_file,
+    save_uploaded_image_file,
+    validate_uploaded_image_file,
+)
 
 api = Namespace('users', description='User operations')
 
@@ -16,6 +25,81 @@ self_update_model = api.model('UserSelfUpdate', {
     'first_name': fields.String(required=False, description='Updated first name'),
     'last_name': fields.String(required=False, description='Updated last name'),
 })
+
+user_photo_model = api.model('UserPhotoUpload', {
+    'photo': fields.String(description='Multipart uploaded profile image'),
+})
+
+
+def normalize_allowed_extensions(extensions):
+    normalized = set()
+    for extension in extensions:
+        value = str(extension).lower().strip()
+        if value == "jpeg":
+            value = "jpg"
+        if value:
+            normalized.add(value)
+    return normalized
+
+
+def get_profile_upload_dir():
+    configured_dir = current_app.config.get("USER_PROFILE_UPLOAD_DIR")
+    if configured_dir:
+        return configured_dir
+    return os.path.join(
+        current_app.root_path,
+        current_app.config["USER_PROFILE_UPLOAD_SUBDIR"],
+    )
+
+
+def get_place_upload_dir():
+    configured_dir = current_app.config.get("PLACE_IMAGE_UPLOAD_DIR")
+    if configured_dir:
+        return configured_dir
+    return os.path.join(
+        current_app.root_path,
+        current_app.config["PLACE_IMAGE_UPLOAD_SUBDIR"],
+    )
+
+
+def collect_user_owned_place_image_urls(user):
+    image_urls = []
+    for place in getattr(user, "places", []) or []:
+        for photo in getattr(place, "photos", []) or []:
+            if getattr(photo, "image_url", None):
+                image_urls.append(photo.image_url)
+        if getattr(place, "image_url", None):
+            image_urls.append(place.image_url)
+    return list(dict.fromkeys(image_urls))
+
+
+def delete_user_owned_place_images(image_urls):
+    if not image_urls:
+        return
+    upload_dir = get_place_upload_dir()
+    url_prefix = current_app.config["PLACE_IMAGE_URL_PREFIX"]
+    for image_url in image_urls:
+        try:
+            delete_uploaded_internal_file(
+                image_url,
+                url_prefix=url_prefix,
+                upload_dir=upload_dir,
+            )
+        except OSError:
+            continue
+
+
+def validate_profile_photo(photo_file):
+    return validate_uploaded_image_file(
+        photo_file,
+        allowed_extensions=normalize_allowed_extensions(
+            current_app.config["ALLOWED_USER_PROFILE_IMAGE_EXTENSIONS"]
+        ),
+        max_size=current_app.config["USER_PROFILE_IMAGE_MAX_SIZE"],
+        invalid_extension_message="Profile photo must use JPG, JPEG, PNG, or WEBP.",
+        invalid_content_message="Uploaded profile photo content is invalid.",
+        max_size_message="Profile photo must be 3 MB or smaller.",
+    )
 
 
 @api.route('/')
@@ -91,6 +175,154 @@ class CurrentUserResource(Resource):
 
         return updated_user.to_dict(), 200
 
+    @api.response(200, "Current user deleted successfully")
+    @api.response(401, "Authentication required")
+    @api.response(403, "Admin account deletion is not allowed")
+    @api.response(404, "User not found")
+    @jwt_required()
+    def delete(self):
+        """Delete the current user's account and owned uploaded files"""
+        user_id = get_jwt_identity()
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+        if user.is_admin:
+            return {'error': 'Admin account deletion is not allowed from this endpoint'}, 403
+
+        profile_photo_url = user.profile_photo_url
+        place_image_urls = collect_user_owned_place_image_urls(user)
+        deleted_user = facade.delete_user(user_id)
+        if not deleted_user:
+            return {'error': 'User not found'}, 404
+
+        upload_dir = get_profile_upload_dir()
+        url_prefix = current_app.config["USER_PROFILE_IMAGE_URL_PREFIX"]
+        if profile_photo_url:
+            try:
+                delete_uploaded_internal_file(
+                    profile_photo_url,
+                    url_prefix=url_prefix,
+                    upload_dir=upload_dir,
+                )
+            except OSError:
+                pass
+        delete_user_owned_place_images(place_image_urls)
+
+        return {
+            "message": "Account deleted successfully.",
+            "deleted_user_id": user_id,
+        }, 200
+
+
+@api.route("/me/export")
+class CurrentUserExportResource(Resource):
+    @api.response(200, "Current user data export generated successfully")
+    @api.response(401, "Authentication required")
+    @api.response(404, "User not found")
+    @jwt_required()
+    def get(self):
+        """Export current user's personal data in JSON format"""
+        user_id = get_jwt_identity()
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        places = [place.to_dict() for place in facade.get_places_by_owner_id(user_id)]
+        reviews = [review.to_dict() for review in facade.get_reviews_by_user_id(user_id)]
+        return {
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "user": user.to_dict(),
+            "places": places,
+            "reviews": reviews,
+        }, 200
+
+
+@api.route('/me/photo')
+class CurrentUserPhotoResource(Resource):
+    @api.expect(user_photo_model, validate=False)
+    @api.response(200, 'Current user photo updated successfully')
+    @api.response(400, 'Invalid uploaded photo')
+    @api.response(401, 'Authentication required')
+    @api.response(404, 'User not found')
+    @jwt_required()
+    def post(self):
+        """Upload or replace the current user's profile photo"""
+        user_id = get_jwt_identity()
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        photo = request.files.get("photo")
+        if not photo or not photo.filename:
+            return {
+                "error": "Profile photo is required.",
+                "fields": {"photo": "Profile photo is required."},
+            }, 400
+
+        upload_dir = get_profile_upload_dir()
+        url_prefix = current_app.config["USER_PROFILE_IMAGE_URL_PREFIX"]
+        previous_photo_url = user.profile_photo_url
+        saved_photo_url = None
+
+        try:
+            extension = validate_profile_photo(photo)
+            saved_photo_url = save_uploaded_image_file(
+                photo,
+                upload_dir=upload_dir,
+                url_prefix=url_prefix,
+                extension=extension,
+            )
+            facade.update_user(user_id, {"profile_photo_url": saved_photo_url})
+            updated_user = facade.get_user(user_id)
+
+            if previous_photo_url and previous_photo_url != saved_photo_url:
+                delete_uploaded_internal_file(
+                    previous_photo_url,
+                    url_prefix=url_prefix,
+                    upload_dir=upload_dir,
+                )
+
+            return updated_user.to_dict(), 200
+        except ValueError as error:
+            if saved_photo_url:
+                delete_uploaded_internal_file(
+                    saved_photo_url,
+                    url_prefix=url_prefix,
+                    upload_dir=upload_dir,
+                )
+            return {"error": str(error), "fields": {"photo": str(error)}}, 400
+        except TypeError as error:
+            if saved_photo_url:
+                delete_uploaded_internal_file(
+                    saved_photo_url,
+                    url_prefix=url_prefix,
+                    upload_dir=upload_dir,
+                )
+            return {"error": str(error)}, 400
+
+    @api.response(200, 'Current user photo removed successfully')
+    @api.response(401, 'Authentication required')
+    @api.response(404, 'User not found')
+    @jwt_required()
+    def delete(self):
+        """Remove the current user's profile photo"""
+        user_id = get_jwt_identity()
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        upload_dir = get_profile_upload_dir()
+        url_prefix = current_app.config["USER_PROFILE_IMAGE_URL_PREFIX"]
+        if user.profile_photo_url:
+            delete_uploaded_internal_file(
+                user.profile_photo_url,
+                url_prefix=url_prefix,
+                upload_dir=upload_dir,
+            )
+        facade.update_user(user_id, {"profile_photo_url": None})
+        updated_user = facade.get_user(user_id)
+        return updated_user.to_dict(), 200
+
 
 @api.route('/me/places')
 class CurrentUserPlacesResource(Resource):
@@ -136,14 +368,21 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
         
-        user_data = api.payload
+        user_data = dict(api.payload or {})
         email = user_data.get('email')
-        
+        new_password = user_data.pop('password', None)
+
         # Ensure email uniqueness (if email is being updated)
         if email:
             existing_user = facade.get_user_by_email(email)
             if existing_user and existing_user.id != user_id:
                 return {'error': 'Email already in use'}, 400
+
+        if new_password is not None:
+            new_password = str(new_password).strip()
+            if not new_password:
+                return {'error': 'Password cannot be empty'}, 400
+            user.hash_password(new_password)
         
         try:
             updated_user = facade.update_user(user_id, user_data)

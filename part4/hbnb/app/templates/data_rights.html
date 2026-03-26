@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow" data-i18n="rights.eyebrow">Your GDPR rights</p>
+            <h1 data-i18n="rights.title">Data Rights</h1>
+        </div>
+        <p class="section-text" data-i18n="rights.text">
+            Access, portability, and erasure options are available from this page for your account.
+        </p>
+    </div>
+
+    <article class="form-card legal-card">
+        <h2 data-i18n="rights.section.summary_title">Your key rights</h2>
+        <p class="field-help" data-i18n="rights.section.summary_body">
+            Under GDPR, you can request access, rectification, deletion, or portability of your personal data.
+        </p>
+        <ul class="legal-list">
+            <li data-i18n="rights.list.access">Right of access to your personal data.</li>
+            <li data-i18n="rights.list.rectify">Right to rectify inaccurate personal data.</li>
+            <li data-i18n="rights.list.erase">Right to erase your account data when applicable.</li>
+            <li data-i18n="rights.list.portability">Right to receive your data in a structured format.</li>
+        </ul>
+    </article>
+
+    <div id="rights-auth-required" class="info-banner hidden" aria-live="polite"></div>
+
+    <section id="rights-account-card" class="form-card hidden">
+        <h2 data-i18n="rights.account_tools_title">Account actions</h2>
+        <p class="field-help" data-i18n="rights.account_tools_text">
+            Export downloads your profile, places, and reviews in JSON. Delete permanently removes your account and owned uploads.
+        </p>
+        <div class="settings-photo-actions">
+            <button id="rights-export-button" type="button" class="utility-link" data-i18n="rights.export_button">
+                Download my data
+            </button>
+            <button id="rights-delete-button" type="button" class="danger-button" data-i18n="rights.delete_button">
+                Delete my account
+            </button>
+        </div>
+        <p id="rights-message" class="form-message" aria-live="polite"></p>
+    </section>
+</section>
+{% endblock %}

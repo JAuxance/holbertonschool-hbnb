@@ -56,6 +56,13 @@ class HBnBFacade:
             self.user_repo.update(user_id, user_data)
         return user
 
+    def delete_user(self, user_id):
+        user = self.get_user(user_id)
+        if not user:
+            return None
+        self.user_repo.delete(user_id)
+        return user
+
     def create_amenity(self, amenity_data):
         existing_amenity = self.amenity_repo.get_amenity_by_name(amenity_data['name'])
         if existing_amenity:
@@ -214,6 +221,12 @@ class HBnBFacade:
         return [
             review for review in self.review_repo.get_all()
             if review.place.id == place_id
+        ]
+
+    def get_reviews_by_user_id(self, user_id):
+        return [
+            review for review in self.review_repo.get_all()
+            if review.user_id == user_id
         ]
 
     def update_review(self, review_id, review_data):

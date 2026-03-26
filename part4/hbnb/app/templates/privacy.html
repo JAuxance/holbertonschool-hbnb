@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="narrow-layout">
+    <div class="section-head compact">
+        <div>
+            <p class="eyebrow" data-i18n="privacy.eyebrow">Data transparency</p>
+            <h1 data-i18n="privacy.title">Privacy Notice</h1>
+        </div>
+        <p class="section-text" data-i18n="privacy.text">
+            This page explains which personal data is used in HBnB, why it is used, and how to exercise your rights.
+        </p>
+    </div>
+
+    <article class="form-card legal-card">
+        <h2 data-i18n="privacy.section.data_title">Data we process</h2>
+        <p class="field-help" data-i18n="privacy.section.data_body">
+            Account details (name, email, hashed password), profile photo if uploaded, your places, reviews, and technical authentication data.
+        </p>
+
+        <h2 data-i18n="privacy.section.purpose_title">Purpose and legal basis</h2>
+        <p class="field-help" data-i18n="privacy.section.purpose_body">
+            Data is processed to provide the service (account management, place publication, reviews, and security of access).
+        </p>
+
+        <h2 data-i18n="privacy.section.storage_title">Storage and retention</h2>
+        <p class="field-help" data-i18n="privacy.section.storage_body">
+            Uploaded profile photos and place images are stored on this server in internal upload folders with randomized file names.
+        </p>
+
+        <h2 data-i18n="privacy.section.contact_title">How to exercise your rights</h2>
+        <p class="field-help" data-i18n="privacy.section.contact_body">
+            Open the Data Rights page to export your data or delete your account. For additional requests, contact the project administrator.
+        </p>
+    </article>
+</section>
+{% endblock %}

@@ -4,10 +4,10 @@
 <section class="narrow-layout">
     <div class="section-head compact">
         <div>
-            <p class="eyebrow">Welcome back</p>
-            <h1>Login Form</h1>
+            <p class="eyebrow" data-i18n="login.eyebrow">Welcome back</p>
+            <h1 data-i18n="login.title">Login Form</h1>
         </div>
-        <p class="section-text">
+        <p class="section-text" data-i18n="login.text">
             Sign in with your HBnB account to create reviews and access authenticated actions.
         </p>
     </div>
@@ -15,12 +15,12 @@
     <div class="form-card">
         <form id="login-form" class="form" action="/api/v1/auth/login" method="post">
             <div class="field">
-                <label for="email">Email</label>
+                <label for="email" data-i18n="common.email">Email</label>
                 <input id="email" name="email" type="email" autocomplete="email" required>
             </div>
 
             <div class="field">
-                <label for="password">Password</label>
+                <label for="password" data-i18n="common.password">Password</label>
                 <input
                     id="password"
                     name="password"
@@ -30,7 +30,7 @@
                 >
             </div>
 
-            <button type="submit" class="primary-button">Sign In</button>
+            <button type="submit" class="primary-button" data-i18n="auth.sign_in">Sign In</button>
             <p id="login-message" class="form-message" aria-live="polite"></p>
         </form>
     </div>

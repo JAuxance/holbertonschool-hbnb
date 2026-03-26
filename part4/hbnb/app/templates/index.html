@@ -3,72 +3,66 @@
 {% block content %}
 <section class="hero">
     <div class="hero-copy">
-        <p class="eyebrow">Curated escapes</p>
-        <h1>Comfort-first stays for weekends that feel longer.</h1>
-        <p class="hero-text">
+        <p class="eyebrow" data-i18n="index.hero.eyebrow">Curated escapes</p>
+        <h1 data-i18n="index.hero.title">Comfort-first stays for weekends that feel longer.</h1>
+        <p class="hero-text" data-i18n="index.hero.text">
             Browse calm, bright spaces with clear pricing, thoughtful amenities,
             and a cleaner booking flow.
         </p>
     </div>
-    <aside class="hero-panel hero-panel-reimagined" aria-labelledby="panel-title">
+    <aside
+        class="hero-panel hero-panel-reimagined"
+        aria-labelledby="panel-title"
+        data-quick-actions
+        data-quick-actions-state="guest"
+    >
         <div class="panel-header">
-            <p class="panel-eyebrow">Quick start</p>
-            <h2 id="panel-title" class="panel-title">A simpler way to move from browsing to booking.</h2>
+            <p class="panel-eyebrow" data-i18n="index.quick_actions.eyebrow">Quick actions</p>
+            <h2 id="panel-title" class="panel-title" data-i18n="index.quick_actions.title">Plan your next move.</h2>
+            <p class="panel-mode" data-quick-actions-mode data-i18n="index.quick_actions.mode_guest">Guest mode</p>
         </div>
 
-        <div class="panel-steps">
-            <div class="panel-step">
-                <span class="panel-step-number">01</span>
-                <div class="panel-step-copy">
-                    <h3>Scan the mood fast</h3>
-                    <p>Large photos, clearer prices, and more balanced cards make the list easier to read.</p>
-                </div>
-            </div>
-            <div class="panel-step">
-                <span class="panel-step-number">02</span>
-                <div class="panel-step-copy">
-                    <h3>Open a place with confidence</h3>
-                    <p>Each stay keeps a stronger visual identity before you move into the detail page.</p>
-                </div>
-            </div>
-            <div class="panel-step">
-                <span class="panel-step-number">03</span>
-                <div class="panel-step-copy">
-                    <h3>Review once connected</h3>
-                    <p>The auth flow stays simple, with review actions revealed when the user is signed in.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel-stats" role="group" aria-label="HBnB highlights">
-            <div class="panel-stat">
-                <strong>3</strong>
-                <span>featured stays</span>
-            </div>
-            <div class="panel-stat">
-                <strong>1</strong>
-                <span>clean auth entry</span>
-            </div>
-            <div class="panel-stat">
-                <strong>100%</strong>
-                <span>local place photos</span>
-            </div>
+        <div class="quick-actions-grid" data-quick-actions-grid role="list" aria-label="Quick actions" data-i18n-aria-label="index.quick_actions.aria">
+            <a class="quick-action-card" href="#places-grid" role="listitem">
+                <span class="quick-action-icon" aria-hidden="true">GO</span>
+                <span class="quick-action-copy">
+                    <strong data-i18n="quick.view_places">View Places</strong>
+                    <span data-i18n="quick.browse_now">Browse now</span>
+                </span>
+                <span class="quick-action-indicator" aria-hidden="true" data-i18n="quick.indicator.open">Open</span>
+            </a>
+            <a class="quick-action-card" href="{{ url_for('web.signup') }}" role="listitem">
+                <span class="quick-action-icon" aria-hidden="true">UP</span>
+                <span class="quick-action-copy">
+                    <strong data-i18n="quick.sign_up">Sign Up</strong>
+                    <span data-i18n="quick.create_account">Create account</span>
+                </span>
+                <span class="quick-action-indicator" aria-hidden="true" data-i18n="quick.indicator.start">Start</span>
+            </a>
+            <a class="quick-action-card" href="{{ url_for('web.login') }}" role="listitem">
+                <span class="quick-action-icon" aria-hidden="true">IN</span>
+                <span class="quick-action-copy">
+                    <strong data-i18n="quick.login">Login</strong>
+                    <span data-i18n="quick.continue">Continue</span>
+                </span>
+                <span class="quick-action-indicator" aria-hidden="true" data-i18n="quick.indicator.now">Now</span>
+            </a>
         </div>
     </aside>
 </section>
 
 <section class="section-head section-head-slim">
     <div>
-        <p class="eyebrow">Available now</p>
-        <h2>List of Places</h2>
+        <p class="eyebrow" data-i18n="index.available.eyebrow">Available now</p>
+        <h2 data-i18n="index.available.title">List of Places</h2>
     </div>
-    <p class="section-text">
+    <p class="section-text" data-i18n="index.available.text">
         The cards below are intentionally larger, calmer, and easier to scan on wide screens.
     </p>
 </section>
 
 <section class="places-block" aria-labelledby="places-title">
-    <h3 id="places-title" class="sr-only">Places</h3>
+    <h3 id="places-title" class="sr-only" data-i18n="index.places.sr_title">Places</h3>
     <div id="places-grid" class="places-grid">
         <article class="place-card">
             <a class="place-card-link" href="{{ url_for('web.place') }}?id=demo-loft" aria-label="View details for Canal Loft">
@@ -87,12 +81,12 @@
                     <div class="card-host">
                         <img
                             class="user-avatar"
-                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=clara-d"
+                            src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
                             alt="Clara D. avatar"
                         >
                         <span>Hosted by Clara D.</span>
                     </div>
-                    <span class="details-button">View Details</span>
+                    <span class="details-button" data-i18n="place.view_details">View Details</span>
                 </div>
             </a>
         </article>
@@ -113,12 +107,12 @@
                     <div class="card-host">
                         <img
                             class="user-avatar"
-                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=malo-t"
+                            src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
                             alt="Malo T. avatar"
                         >
                         <span>Hosted by Malo T.</span>
                     </div>
-                    <span class="details-button">View Details</span>
+                    <span class="details-button" data-i18n="place.view_details">View Details</span>
                 </div>
             </a>
         </article>
@@ -139,18 +133,20 @@
                     <div class="card-host">
                         <img
                             class="user-avatar"
-                            src="https://api.dicebear.com/9.x/open-peeps/svg?seed=iris-l"
+                            src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
                             alt="Iris L. avatar"
                         >
                         <span>Hosted by Iris L.</span>
                     </div>
-                    <span class="details-button">View Details</span>
+                    <span class="details-button" data-i18n="place.view_details">View Details</span>
                 </div>
             </a>
         </article>
     </div>
     <noscript>
-        <p class="info-banner">Enable JavaScript to load live places from the Flask API.</p>
+        <p class="info-banner" data-i18n="index.noscript">
+            Enable JavaScript to load live places from the Flask API.
+        </p>
     </noscript>
 </section>
 {% endblock %}

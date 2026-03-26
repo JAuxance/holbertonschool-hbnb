@@ -17,6 +17,7 @@ class APITestCase(unittest.TestCase):
         fd, self.db_path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
         self.upload_dir = tempfile.mkdtemp(prefix="hbnb-place-images-")
+        self.user_upload_dir = tempfile.mkdtemp(prefix="hbnb-user-images-")
 
         self.app = create_app(
             "config.TestingConfig",
@@ -25,6 +26,7 @@ class APITestCase(unittest.TestCase):
                 "SECRET_KEY": "test-secret-key-for-hbnb-part4-1234567890",
                 "JWT_SECRET_KEY": "test-jwt-secret-key-for-hbnb-part4-1234567890",
                 "PLACE_IMAGE_UPLOAD_DIR": self.upload_dir,
+                "USER_PROFILE_UPLOAD_DIR": self.user_upload_dir,
             },
         )
         self.client = self.app.test_client()
@@ -45,6 +47,7 @@ class APITestCase(unittest.TestCase):
             os.unlink(self.db_path)
 
         shutil.rmtree(self.upload_dir, ignore_errors=True)
+        shutil.rmtree(self.user_upload_dir, ignore_errors=True)
 
     def auth_headers(self, token):
         return {"Authorization": f"Bearer {token}"}

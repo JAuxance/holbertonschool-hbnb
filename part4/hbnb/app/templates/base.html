@@ -9,6 +9,33 @@
         content="HBnB front-end experience for browsing places, viewing details, and sharing reviews."
     >
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    >
+    <script>
+        (function () {
+            try {
+                var language = window.localStorage.getItem("hbnb_lang");
+                if (language === "fr" || language === "en") {
+                    document.documentElement.lang = language;
+                }
+
+                var storedTheme = window.localStorage.getItem("hbnb_theme");
+                var choice = (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system")
+                    ? storedTheme
+                    : "system";
+                var resolved = choice === "system"
+                    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+                    : choice;
+                document.documentElement.dataset.theme = resolved;
+            } catch (error) {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
     {% block extra_styles %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
@@ -18,7 +45,7 @@
     <div class="site-backdrop"></div>
     <div class="site-shell">
         <header class="site-header">
-            <a class="brand" href="{{ url_for('web.index') }}" aria-label="HBnB Home">
+            <a class="brand" href="{{ url_for('web.index') }}" aria-label="HBnB Home" data-i18n-aria-label="brand.home_aria">
                 <img
                     src="{{ url_for('static', filename='img/logo.png') }}"
                     alt="HBnB logo"
@@ -26,30 +53,36 @@
                 >
                 <span class="brand-copy">
                     <span class="eyebrow">HBnB</span>
-                    <span class="brand-name">Slow stays, bright spaces.</span>
+                    <span class="brand-name" data-i18n="brand.tagline">Slow stays, bright spaces.</span>
                 </span>
             </a>
 
-            <nav class="main-nav" aria-label="Primary navigation">
+            <nav class="main-nav" aria-label="Primary navigation" data-i18n-aria-label="nav.primary">
                 <a
                     href="{{ url_for('web.index') }}"
                     class="{{ 'is-active' if page_name in ['index', 'place', 'add-review', 'add-place', 'signup', 'profile', 'settings'] else '' }}"
                 >
-                    Places
+                    <span data-i18n="nav.places">Places</span>
                 </a>
-                <a href="/api/v1/">API Docs</a>
+                <a id="nav-api-docs" href="/api/v1/" class="hidden">
+                    <span data-i18n="nav.api_docs">API Docs</span>
+                </a>
             </nav>
 
-            <div class="auth-actions" id="auth-actions">
-                <div class="auth-cluster auth-cluster-guest">
-                    <a href="{{ url_for('web.signup') }}" class="utility-link">Sign up</a>
-                    <a
-                        href="{{ url_for('web.login') }}"
-                        class="login-button"
-                        id="auth-link"
-                    >
-                        Login
-                    </a>
+            <div class="header-tools">
+                <div class="auth-actions" id="auth-actions">
+                    <div class="auth-cluster auth-cluster-guest">
+                        <a href="{{ url_for('web.signup') }}" class="utility-link">
+                            <span data-i18n="auth.sign_up">Sign up</span>
+                        </a>
+                        <a
+                            href="{{ url_for('web.login') }}"
+                            class="login-button"
+                            id="auth-link"
+                        >
+                            <span data-i18n="auth.login">Login</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -59,7 +92,11 @@
         </main>
 
         <footer class="site-footer">
-            <p>All rights reserved.</p>
+            <div class="footer-links">
+                <a href="{{ url_for('web.privacy') }}" data-i18n="footer.privacy">Privacy</a>
+                <a href="{{ url_for('web.data_rights') }}" data-i18n="footer.data_rights">Data rights</a>
+            </div>
+            <p data-i18n="footer.rights">All rights reserved.</p>
         </footer>
     </div>
 </body>

@@ -16,6 +16,7 @@ class TestUserModel(unittest.TestCase):
         self.assertEqual(user.last_name, "Doe")
         self.assertEqual(user.email, "john.doe@example.com")
         self.assertFalse(user.is_admin)
+        self.assertIsNone(user.profile_photo_url)
 
     def test_password_hash_and_verify(self):
         user = User(

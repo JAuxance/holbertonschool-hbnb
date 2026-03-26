@@ -4,55 +4,56 @@
 <section class="narrow-layout">
     <div class="section-head compact">
         <div>
-            <p class="eyebrow">Share your stay</p>
-            <h1>Add Review Form</h1>
+            <p class="eyebrow" data-i18n="add_review.eyebrow">Share your stay</p>
+            <h1 data-i18n="add_review.title">Add Review Form</h1>
         </div>
-        <p class="section-text">
+        <p class="section-text" data-i18n="add_review.text">
             This form is available only for authenticated users. Log in first, then rate the place and
             leave a short comment.
         </p>
     </div>
 
     <div id="auth-required" class="info-banner hidden" aria-live="polite">
-        You need to log in before sending a review.
+        <span data-i18n="add_review.login_required">You need to log in before sending a review.</span>
     </div>
 
     <div class="add-review">
         <form id="review-form" class="form" action="/api/v1/reviews/" method="post" novalidate>
             <div class="field">
-                <label for="place_id">Place</label>
+                <label for="place_id" data-i18n="common.place">Place</label>
                 <select id="place_id" name="place_id">
-                    <option value="" label="Choose a place"></option>
+                    <option value="" label="Choose a place" data-i18n-label="common.choose_place"></option>
                 </select>
                 <p id="review-place-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-                <label for="rating">Rating</label>
+                <label for="rating" data-i18n="common.rating">Rating</label>
                 <select id="rating" name="rating">
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Very Good</option>
-                    <option value="3">3 - Good</option>
-                    <option value="2">2 - Fair</option>
-                    <option value="1">1 - Poor</option>
+                    <option value="5" data-i18n="rating.5">5 - Excellent</option>
+                    <option value="4" data-i18n="rating.4">4 - Very Good</option>
+                    <option value="3" data-i18n="rating.3">3 - Good</option>
+                    <option value="2" data-i18n="rating.2">2 - Fair</option>
+                    <option value="1" data-i18n="rating.1">1 - Poor</option>
                 </select>
                 <p id="review-rating-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-                <label for="text">Comment</label>
+                <label for="text" data-i18n="common.comment">Comment</label>
                 <textarea
                     id="text"
                     name="text"
                     rows="5"
                     placeholder="Tell future guests what stood out during your stay."
+                    data-i18n-placeholder="add_review.comment_placeholder"
                     required
                 ></textarea>
                 <p id="review-text-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <p id="review-message" class="form-message" aria-live="polite"></p>
-            <button type="submit" class="primary-button">Publish Review</button>
+            <button type="submit" class="primary-button" data-i18n="add_review.publish">Publish Review</button>
         </form>
     </div>
 </section>

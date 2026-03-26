@@ -13,11 +13,12 @@ class User(BaseModel):
     email = Column(String(120), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False)
+    profile_photo_url = Column(String(255), nullable=True)
 
     places = relationship('Place', back_populates='owner', cascade='all, delete-orphan')
     reviews = relationship('Review', back_populates='user', cascade='all, delete-orphan')
 
-    def __init__(self, first_name, last_name, email, password, is_admin=False):
+    def __init__(self, first_name, last_name, email, password, is_admin=False, profile_photo_url=None):
         """Initialize a User instance."""
         super().__init__()
         self.first_name = first_name
@@ -25,6 +26,7 @@ class User(BaseModel):
         self.email = email
         self.password = password
         self.is_admin = is_admin
+        self.profile_photo_url = profile_photo_url
 
     @validates('first_name')
     def validate_first_name(self, key, value):
@@ -66,6 +68,21 @@ class User(BaseModel):
             raise TypeError("is_admin must be a boolean")
         return value
 
+    @validates('profile_photo_url')
+    def validate_profile_photo_url(self, key, value):
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise TypeError("profile_photo_url must be a string")
+        value = value.strip()
+        if not value:
+            return None
+        if len(value) > 255:
+            raise ValueError("profile_photo_url must be 255 characters or less")
+        if not value.startswith("/static/uploads/users/"):
+            raise ValueError("profile_photo_url must point to an internal uploaded user photo")
+        return value
+
     def to_dict(self):
         """Convert the User instance to a dictionary."""
         return {
@@ -74,6 +91,7 @@ class User(BaseModel):
             'last_name': self.last_name,
             'email': self.email,
             'is_admin': self.is_admin,
+            'profile_photo_url': self.profile_photo_url,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

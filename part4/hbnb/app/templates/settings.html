@@ -4,21 +4,58 @@
 <section class="narrow-layout">
     <div class="section-head compact">
         <div>
-            <p class="eyebrow">Account preferences</p>
-            <h1>Settings</h1>
+            <p class="eyebrow" data-i18n="settings.eyebrow">Account preferences</p>
+            <h1 data-i18n="settings.title">Settings</h1>
         </div>
-        <p class="section-text">
-            Update the name shown across your published places and account menu.
+        <p class="section-text" data-i18n="settings.text">
+            Update your profile details and avatar shown across your account.
         </p>
     </div>
 
     <div id="settings-auth-required" class="info-banner hidden" aria-live="polite"></div>
 
     <div id="settings-card" class="form-card hidden">
+        <div class="settings-avatar-panel">
+            <img
+                id="settings-avatar-preview"
+                class="user-avatar user-avatar-xl"
+                src="{{ url_for('static', filename='img/avatar-placeholder.svg') }}"
+                alt="Profile avatar"
+            >
+            <div class="settings-avatar-copy">
+                <h2 data-i18n="settings.photo_title">Profile photo</h2>
+                <p class="field-help" data-i18n="settings.photo_help">
+                    Upload JPG, PNG, or WEBP up to 3 MB. Replacing removes the previous photo.
+                </p>
+                <p class="field-help settings-photo-note" data-i18n="settings.photo_storage_note">
+                    Stored on this server with a randomized filename. Replacing deletes the previous file.
+                </p>
+            </div>
+        </div>
+
+        <form id="settings-photo-form" class="form settings-photo-form" action="/api/v1/users/me/photo" method="post" enctype="multipart/form-data">
+            <div class="field">
+                <input
+                    id="settings-photo-input"
+                    name="photo"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                >
+            </div>
+            <div class="settings-photo-actions">
+                <button id="settings-photo-upload" type="submit" class="primary-button" data-i18n="settings.photo_upload">
+                    Upload Photo
+                </button>
+                <button id="settings-photo-remove" type="button" class="utility-link" data-i18n="settings.photo_remove">
+                    Remove Photo
+                </button>
+            </div>
+        </form>
+
         <form id="settings-form" class="form" action="/api/v1/users/me" method="post">
             <div class="field-grid field-grid-2">
                 <div class="field">
-                    <label for="settings-first-name">First Name</label>
+                    <label for="settings-first-name" data-i18n="common.first_name">First Name</label>
                     <input
                         id="settings-first-name"
                         name="first_name"
@@ -30,7 +67,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="settings-last-name">Last Name</label>
+                    <label for="settings-last-name" data-i18n="common.last_name">Last Name</label>
                     <input
                         id="settings-last-name"
                         name="last_name"
@@ -42,9 +79,10 @@
                 </div>
             </div>
 
-            <button type="submit" class="primary-button">Save Changes</button>
-            <p id="settings-message" class="form-message" aria-live="polite"></p>
+            <button type="submit" class="primary-button" data-i18n="settings.save_changes">Save Changes</button>
         </form>
+
+        <p id="settings-message" class="form-message" aria-live="polite"></p>
     </div>
 </section>
 {% endblock %}

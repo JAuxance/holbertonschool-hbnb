@@ -18,10 +18,10 @@
 <section class="narrow-layout">
     <div class="section-head compact">
         <div>
-            <p class="eyebrow">Host tools</p>
-            <h1>Create Place</h1>
+            <p class="eyebrow" data-i18n="add_place.eyebrow">Host tools</p>
+            <h1 data-i18n="add_place.title">Create Place</h1>
         </div>
-        <p class="section-text">
+        <p class="section-text" data-i18n="add_place.text">
             Publish a real place from the website and send it straight to the Flask API.
         </p>
     </div>
@@ -31,31 +31,33 @@
     <div class="form-card">
         <form id="place-form" class="form" action="/api/v1/places/" method="post" enctype="multipart/form-data" novalidate>
             <div class="field">
-                <label for="title">Title</label>
+                <label for="title" data-i18n="common.title">Title</label>
                 <input
                     id="title"
                     name="title"
                     type="text"
                     maxlength="100"
                     placeholder="Canal Loft"
+                    data-i18n-placeholder="add_place.title_placeholder"
                     required
                 >
                 <p id="title-error" class="field-error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-                <label for="description">Description</label>
+                <label for="description" data-i18n="common.description">Description</label>
                 <textarea
                     id="description"
                     name="description"
                     rows="5"
                     placeholder="Describe the place, its atmosphere, and what makes it useful for guests."
+                    data-i18n-placeholder="add_place.description_placeholder"
                 ></textarea>
             </div>
 
             <div class="field-grid field-grid-2">
                 <div class="field">
-                    <label for="price">Price</label>
+                    <label for="price" data-i18n="common.price">Price</label>
                     <input
                         id="price"
                         name="price"
@@ -64,16 +66,17 @@
                         pattern="[0-9]{1,7}"
                         maxlength="7"
                         placeholder="145"
+                        data-i18n-placeholder="add_place.price_placeholder"
                         autocomplete="off"
                         required
                     >
-                    <p class="field-help">
+                    <p class="field-help" data-i18n="add_place.price_help">
                         Digits only, up to 7 numbers.
                     </p>
                     <p id="price-error" class="field-error" aria-live="polite"></p>
                 </div>
                 <div class="field">
-                    <label for="phone_local_number">Phone number</label>
+                    <label for="phone_local_number" data-i18n="add_place.phone_number">Phone number</label>
                     <div class="phone-field-shell">
                         <div class="phone-country-row">
                             <select id="phone_country" name="phone_country_iso" autocomplete="country-name"></select>
@@ -86,12 +89,13 @@
                                 inputmode="tel"
                                 maxlength="15"
                                 placeholder="6 12 34 56 78"
+                                data-i18n-placeholder="add_place.phone_placeholder"
                                 autocomplete="off"
                             >
                         </div>
                         <input id="phone_number" name="phone_number" type="hidden">
                     </div>
-                    <p id="phone-help" class="field-help">
+                    <p id="phone-help" class="field-help" data-i18n="add_place.phone_help">
                         Choose the country first. We store one international number starting with the correct + code.
                     </p>
                     <p id="phone-error" class="field-error" aria-live="polite"></p>
@@ -99,27 +103,28 @@
             </div>
 
             <div class="field">
-                <label for="amenity-name-input">Choose Amenities</label>
+                <label for="amenity-name-input" data-i18n="add_place.choose_amenities">Choose Amenities</label>
                 <div class="amenity-create-row">
                     <input
                         id="amenity-name-input"
                         type="text"
                         maxlength="100"
                         placeholder="Sauna"
+                        data-i18n-placeholder="add_place.amenity_placeholder"
                     >
                     <button id="amenity-create-button" type="button" class="utility-link utility-link-inline">
-                        Add amenity
+                        <span data-i18n="add_place.add_amenity">Add amenity</span>
                     </button>
                 </div>
                 <p id="amenity-create-feedback" class="field-help" aria-live="polite"></p>
                 <div id="amenities-picker" class="amenity-picker" aria-live="polite"></div>
-                <p id="amenities-help" class="field-help">
+                <p id="amenities-help" class="field-help" data-i18n="add_place.amenities_help">
                     Choose existing amenities or add a new one to the global catalog for future filtering.
                 </p>
             </div>
 
             <div class="field">
-                <label for="place-images">Place photos</label>
+                <label for="place-images" data-i18n="add_place.photos">Place photos</label>
                 <input
                     id="place-images"
                     name="images"
@@ -127,7 +132,7 @@
                     multiple
                     accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                 >
-                <p class="field-help">
+                <p class="field-help" data-i18n="add_place.photos_help">
                     Accepted formats: JPG, PNG, WEBP up to 5 MB each. You can add up to 5 photos.
                 </p>
                 <p id="photos-error" class="field-error" aria-live="polite"></p>
@@ -136,7 +141,7 @@
             </div>
 
             <div class="field">
-                <label for="place-address">Search an address</label>
+                <label for="place-address" data-i18n="add_place.search_address">Search an address</label>
                 <div class="address-search">
                     <input
                         id="place-address"
@@ -144,23 +149,29 @@
                         type="text"
                         autocomplete="street-address"
                         placeholder="10 rue de Rivoli, Paris"
+                        data-i18n-placeholder="add_place.address_placeholder"
                     >
                     <button id="search-address-button" type="button" class="utility-link utility-link-inline">
-                        Search
+                        <span data-i18n="common.search">Search</span>
                     </button>
                 </div>
-                <p id="address-search-status" class="field-help">
+                <p id="address-search-status" class="field-help" data-i18n="add_place.address_help">
                     Search an address to place the marker automatically on the map.
                 </p>
                 <div id="address-search-results" class="address-results hidden" aria-live="polite"></div>
             </div>
 
             <div class="field">
-                <label for="place-map">Location on the map</label>
+                <label for="place-map" data-i18n="add_place.map_location">Location on the map</label>
                 <div class="map-card">
-                    <div id="place-map" class="place-map" aria-label="Choose a point on the map"></div>
+                    <div
+                        id="place-map"
+                        class="place-map"
+                        aria-label="Choose a point on the map"
+                        data-i18n-aria-label="add_place.map_aria"
+                    ></div>
                     <div class="map-toolbar">
-                        <p id="map-status" class="field-help">
+                        <p id="map-status" class="field-help" data-i18n="add_place.map_help">
                             Click on the map to place your marker, or use manual coordinates below.
                         </p>
                         <button
@@ -168,10 +179,12 @@
                             type="button"
                             class="utility-link utility-link-inline"
                         >
-                            Enter coordinates manually
+                            <span data-i18n="add_place.enter_coordinates">Enter coordinates manually</span>
                         </button>
                     </div>
-                    <p id="selected-coordinates" class="selected-coordinates">No location selected yet.</p>
+                    <p id="selected-coordinates" class="selected-coordinates" data-i18n="add_place.no_location">
+                        No location selected yet.
+                    </p>
                 </div>
                 <p id="location-error" class="field-error" aria-live="polite"></p>
                 <input id="latitude" name="latitude" type="hidden">
@@ -180,7 +193,7 @@
 
             <div id="manual-coordinates" class="field-grid field-grid-2 hidden">
                 <div class="field">
-                    <label for="manual-latitude">Latitude</label>
+                    <label for="manual-latitude" data-i18n="common.latitude">Latitude</label>
                     <input
                         id="manual-latitude"
                         type="number"
@@ -188,10 +201,11 @@
                         max="90"
                         step="0.0001"
                         placeholder="48.8566"
+                        data-i18n-placeholder="add_place.latitude_placeholder"
                     >
                 </div>
                 <div class="field">
-                    <label for="manual-longitude">Longitude</label>
+                    <label for="manual-longitude" data-i18n="common.longitude">Longitude</label>
                     <input
                         id="manual-longitude"
                         type="number"
@@ -199,13 +213,16 @@
                         max="180"
                         step="0.0001"
                         placeholder="2.3522"
+                        data-i18n-placeholder="add_place.longitude_placeholder"
                     >
                 </div>
             </div>
 
             <div class="form-actions">
                 <p id="place-message" class="form-message" aria-live="polite"></p>
-                <button id="create-place-submit" type="submit" class="primary-button form-submit-button">Create Place</button>
+                <button id="create-place-submit" type="submit" class="primary-button form-submit-button" data-i18n="place.create_place">
+                    Create Place
+                </button>
             </div>
         </form>
     </div>
